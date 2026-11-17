@@ -1,0 +1,70 @@
+import mongoose from "mongoose";
+
+const bookingSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    bookingReference: {
+      type: String,
+      unique: true,
+      required: true,
+    },
+
+    checkIn: {
+      type: Date,
+      required: true,
+    },
+
+    checkOut: {
+      type: Date,
+      required: true,
+    },
+
+    numberOfGuests: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+
+    totalAmount: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    downpaymentAmount: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    remainingBalance: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    paymentStatus: {
+      type: String,
+      enum: ["unpaid", "partial", "fully_paid"],
+      default: "unpaid",
+    },
+
+    bookingStatus: {
+      type: String,
+      enum: ["pending", "confirmed", "cancelled", "completed"],
+      default: "pending",
+    },
+  },
+  {
+    timestamps: true,
+  },
+);
+
+const Booking = mongoose.model("Booking", bookingSchema);
+
+export default Booking;
