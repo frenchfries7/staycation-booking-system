@@ -1,0 +1,215 @@
+import crypto from "crypto";
+import Payment from "../models/payment.js";
+import Booking from "../models/booking.js";
+
+const verifyPayMongoSignature = (rawBody, signatureHeader) => {
+  const webhookSecret = process.env.PAYMONGO_WEBHOOK_SECRET;
+
+  if (!webhookSecret || !signatureHeader || !Buffer.isBuffer(rawBody)) {
+    return false;
+  }
+
+  const parts = signatureHeader.split(",").reduce((acc, part) => {
+    const [key, value] = part.split("=");
+    if (key && value) acc[key.trim()] = value.trim();
+    return acc;
+  }, {});
+
+  const timestamp = parts.t;
+  const testSignature = parts.te;
+  const liveSignature = parts.li;
+
+  if (!timestamp) return false;
+
+  // Reject old webhook requests to reduce replay attacks.
+  const timestampNumber = Number(timestamp);
+
+  if (
+    !Number.isFinite(timestampNumber) ||
+    Math.abs(Date.now() / 1000 - timestampNumber) > 300
+  ) {
+    return false;
+  }
+
+  const payload = `${timestamp}.${rawBody.toString("utf8")}`;
+
+  const expectedSignature = crypto
+    .createHmac("sha256", webhookSecret)
+    .update(payload)
+    .digest("hex");
+
+  // Test and live events use different signature values.
+  // We determine the correct mode after parsing the event,
+  // so validate against either supplied signature here.
+  const signatures = [testSignature, liveSignature].filter(Boolean);
+
+  return signatures.some((signature) => {
+    const expected = Buffer.from(expectedSignature, "hex");
+    const received = Buffer.from(signature, "hex");
+
+    return (
+      expected.length === received.length &&
+      crypto.timingSafeEqual(expected, received)
+    );
+  });
+};
+
+export const handlePayMongoWebhook = async (req, res) => {
+  try {
+    const signatureHeader = req.headers["paymongo-signature"];
+
+    if (!verifyPayMongoSignature(req.body, signatureHeader)) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid webhook signature.",
+      });
+    }
+
+    const event = JSON.parse(req.body.toString("utf8"));
+
+    const eventType = event.data?.attributes?.type;
+    const eventData = event.data?.attributes?.data;
+    const attributes = eventData?.attributes;
+
+    if (!eventType || !eventData?.id || !attributes) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid webhook payload.",
+      });
+    }
+
+    // We only process successful and failed payment events.
+    if (!["payment.paid", "payment.failed"].includes(eventType)) {
+      return res.status(200).json({
+        success: true,
+        message: "Event ignored.",
+      });
+    }
+
+    const paymentIntentId = attributes.payment_intent_id;
+
+    if (!paymentIntentId) {
+      return res.status(400).json({
+        success: false,
+        message: "Payment Intent ID is missing.",
+      });
+    }
+
+    const payment = await Payment.findOne({ paymentIntentId });
+
+    if (!payment) {
+      console.error("Webhook payment record not found:", paymentIntentId);
+
+      // Acknowledge unknown payments to avoid endless retries.
+      return res.status(200).json({
+        success: true,
+        message: "Payment record not found. Event acknowledged.",
+      });
+    }
+
+    // Prevent duplicate or repeated webhook processing.
+    if (payment.paymentStatus === "completed") {
+      return res.status(200).json({
+        success: true,
+        message: "Payment already processed.",
+      });
+    }
+
+    if (eventType === "payment.failed") {
+      payment.paymentStatus = "failed";
+      await payment.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Failed payment recorded.",
+      });
+    }
+
+    // Verify amount and currency against our own payment record.
+    const expectedAmount = Math.round(payment.amount * 100);
+
+    if (
+      attributes.status !== "paid" ||
+      attributes.amount !== expectedAmount ||
+      attributes.currency?.toUpperCase() !== "PHP"
+    ) {
+      console.error("Webhook payment validation failed:", paymentIntentId);
+
+      return res.status(400).json({
+        success: false,
+        message: "Payment amount or currency does not match.",
+      });
+    }
+
+    const booking = await Booking.findById(payment.bookingId);
+
+    if (!booking) {
+      return res.status(200).json({
+        success: true,
+        message: "Booking not found. Event acknowledged for review.",
+      });
+    }
+
+    // Mark the actual successful payment.
+    payment.paymentStatus = "completed";
+    await payment.save();
+
+    // DOWNPAYMENT: confirm booking only if it is still reserved.
+    if (payment.paymentPurpose === "downpayment") {
+      const isEligible =
+        booking.bookingStatus === "pending" &&
+        booking.paymentStatus === "unpaid" &&
+        booking.isDateReserved === true &&
+        booking.expiresAt &&
+        booking.expiresAt > new Date();
+
+      if (!isEligible) {
+        console.error(
+          "Late or ineligible downpayment requires manual review:",
+          booking._id,
+        );
+
+        return res.status(200).json({
+          success: true,
+          message: "Payment received but booking requires manual review.",
+        });
+      }
+
+      booking.bookingStatus = "confirmed";
+      booking.paymentStatus = "partial";
+
+      await booking.save();
+    }
+
+    // BALANCE: mark the booking fully paid.
+    if (payment.paymentPurpose === "balance") {
+      const isEligible =
+        booking.bookingStatus === "confirmed" &&
+        booking.paymentStatus === "partial";
+
+      if (!isEligible) {
+        console.error("Balance payment requires manual review:", booking._id);
+
+        return res.status(200).json({
+          success: true,
+          message: "Payment received but booking requires manual review.",
+        });
+      }
+
+      booking.paymentStatus = "fully_paid";
+      await booking.save();
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Payment webhook processed successfully.",
+    });
+  } catch (error) {
+    console.error("PayMongo webhook error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Webhook processing failed.",
+    });
+  }
+};

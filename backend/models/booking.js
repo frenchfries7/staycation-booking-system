@@ -19,6 +19,11 @@ const bookingSchema = new mongoose.Schema(
       required: true,
     },
 
+    checkInDateKey: {
+      type: String,
+      required: true,
+    },
+
     checkOut: {
       type: Date,
       required: true,
@@ -56,12 +61,33 @@ const bookingSchema = new mongoose.Schema(
 
     bookingStatus: {
       type: String,
-      enum: ["pending", "confirmed", "cancelled", "completed"],
+      enum: ["pending", "confirmed", "cancelled", "completed", "expired"],
       default: "pending",
+    },
+
+    expiresAt: {
+      type: Date,
+      default: null,
+    },
+
+    isDateReserved: {
+      type: Boolean,
+      default: true,
     },
   },
   {
     timestamps: true,
+  },
+);
+
+// Only one active reservation per check-in date
+bookingSchema.index(
+  { checkInDateKey: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      isDateReserved: true,
+    },
   },
 );
 
