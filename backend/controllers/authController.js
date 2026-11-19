@@ -1,6 +1,13 @@
 import User from "../models/user.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+  path: "/",
+};
 
 // REGISTER
 export const register = async (req, res) => {
@@ -43,11 +50,11 @@ export const register = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "7d" },
     );
+    res.cookie("token", token, cookieOptions);
 
     return res.status(201).json({
       success: true,
       message: "Registration successful.",
-      token,
       user: {
         id: user._id,
         name: user.name,
@@ -98,11 +105,11 @@ export const login = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "7d" },
     );
+    res.cookie("token", token, cookieOptions);
 
     return res.status(200).json({
       success: true,
       message: "Login successful.",
-      token,
       user: {
         id: user._id,
         name: user.name,
@@ -138,4 +145,18 @@ export const getMe = async (req, res) => {
       message: "Failed to retrieve user.",
     });
   }
+};
+// LOGOUT
+export const logout = (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    path: "/",
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: "Logged out successfully.",
+  });
 };
