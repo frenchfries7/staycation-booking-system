@@ -13,6 +13,7 @@ const API_URL = import.meta.env.VITE_API_BASE_URL;
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [csrfToken, setCsrfToken] = useState("");
 
   // CHECK AUTHENTICATION
   const checkAuth = useCallback(async () => {
@@ -62,12 +63,32 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
+  useEffect(() => {
+    const fetchCsrfToken = async () => {
+      try {
+        const response = await fetch(`${API_URL}/csrf-token`, {
+          credentials: "include",
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          setCsrfToken(data.csrfToken);
+        }
+      } catch (error) {
+        console.error("Failed to fetch CSRF token:", error);
+      }
+    };
+
+    fetchCsrfToken();
+  }, []);
 
   return (
     <AuthContext.Provider
       value={{
         user,
         loading,
+        csrfToken,
         login,
         logout,
         checkAuth,
