@@ -3,7 +3,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { StayProvider } from "./context/StayContext";
 import "bootstrap/dist/css/bootstrap.min.css";
 import GoogleSuccess from "./pages/GoogleSuccess";
-//import MyBookings from "./pages/MyBookings";
+
 import TheUnit from "./pages/TheUnit";
 import Amenities from "./pages/Amenities";
 import Location from "./pages/Location";
@@ -30,7 +30,6 @@ function App() {
               }
             />
             <Route path="/google-success" element={<GoogleSuccess />} />
-            {/* <Route path="/my-bookings" element={<MyBookings />} /> */}
           </Routes>
         </StayProvider>
       </AuthProvider>
