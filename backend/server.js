@@ -6,10 +6,11 @@ import cookieParser from "cookie-parser";
 import cron from "node-cron";
 import { handlePayMongoWebhook } from "./controllers/webhookController.js";
 import passport from "passport";
+import crypto from "crypto";
 
 import connectDB from "./config/db.js";
 import expirePendingBookings from "./utils/expirePendingBookings.js";
-
+import csrfMiddleware from "./middleware/csrfMiddleware.js";
 import authRoutes from "./routes/authRoutes.js";
 import googleAuthRoutes from "./routes/googleAuthRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
@@ -37,13 +38,29 @@ app.use(
 app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.get("/api/csrf-token", (req, res) => {
+  const csrfToken = crypto.randomBytes(32).toString("hex");
+
+  res.cookie("csrfToken", csrfToken, {
+    httpOnly: false,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    maxAge: 60 * 60 * 1000,
+    path: "/",
+  });
+
+  res.status(200).json({
+    success: true,
+    csrfToken,
+  });
+});
 app.use(passport.initialize());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/auth", googleAuthRoutes);
-app.use("/api/bookings", bookingRoutes);
+app.use("/api/bookings", csrfMiddleware, bookingRoutes);
 app.use("/api/accommodation", accommodationRoutes);
-app.use("/api/payments", paymentRoutes);
+app.use("/api/payments", csrfMiddleware, paymentRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({

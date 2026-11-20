@@ -1,0 +1,118 @@
+.br-navbar {
+  --br-bg: #FAF9F5;
+  --br-border: #e6e4dc;
+  --br-navy: #1f2547;
+  --br-text: #4b5063;
+  --br-avatar: #ede4dc;
+
+  background: var(--br-bg);
+  border-bottom: 1px solid var(--br-border);
+  padding-block: 1rem;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.br-brand {
+  color: var(--br-navy);
+  font-weight: 700;
+  font-size: 1.05rem;
+  text-decoration: none;
+}
+.br-brand:hover {
+  color: var(--br-navy);
+}
+
+.br-links .nav-link {
+  color: var(--br-text);
+  font-size: 0.95rem;
+}
+.br-links .nav-link:hover,
+.br-links .nav-link:focus {
+  color: var(--br-navy);
+}
+
+/* Menu pill (hamburger + avatar) */
+.br-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.6rem 0.5rem 0.9rem;
+  background: #fff;
+  border: 0;
+  border-radius: 999px;
+  color: var(--br-navy);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.03);
+}
+.br-pill::after {
+  display: none; /* hide Bootstrap's dropdown caret */
+}
+.br-pill:focus-visible {
+  outline: 2px solid var(--br-navy);
+  outline-offset: 2px;
+}
+
+.br-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--br-avatar);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--br-navy);
+  object-fit: cover;
+}
+
+.br-menu {
+  border: 1px solid var(--br-border);
+  border-radius: 14px;
+  padding: 0.5rem;
+  min-width: 200px;
+  box-shadow: 0 8px 24px rgba(31, 37, 71, 0.1);
+}
+.br-menu .dropdown-item {
+  border-radius: 8px;
+  color: var(--br-text);
+  font-size: 0.95rem;
+}
+.br-menu .dropdown-item:hover {
+  background: var(--br-bg);
+  color: var(--br-navy);
+}
+.br-hello {
+  font-weight: 600;
+  color: var(--br-navy);
+}
+
+/* Book Now button */
+.br-book {
+  align-items: center;
+  padding: 0.55rem 1.25rem;
+  background: #5f7a93;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: 8px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+.br-book:hover,
+.br-book:focus-visible {
+  background: #4f6a82;
+  color: #fff;
+}
+
+/* Never wrap brand or links */
+.br-brand,
+.br-links,
+.br-links .nav-link {
+  white-space: nowrap;
+}
+.br-links {
+  flex-wrap: nowrap;
+}
