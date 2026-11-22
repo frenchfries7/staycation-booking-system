@@ -43,6 +43,10 @@ const paymentSchema = new mongoose.Schema(
       enum: ["pending", "completed", "failed"],
       default: "pending",
     },
+    receiptEmailSentAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
