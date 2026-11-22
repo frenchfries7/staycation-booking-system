@@ -2,6 +2,8 @@ import Booking from "../models/booking.js";
 import Accommodation from "../models/accommodation.js";
 import expirePendingBookings from "../utils/expirePendingBookings.js";
 import { randomBytes } from "crypto";
+import sendEmail from "../utils/emailService.js";
+import bookingCancellationEmail from "../utils/bookingCancellationEmail.js";
 
 // Create booking
 export const createBooking = async (req, res) => {
@@ -240,6 +242,68 @@ export const checkAvailability = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Failed to check availability.",
+    });
+  }
+};
+
+// Cancel booking
+export const cancelBooking = async (req, res) => {
+  try {
+    const booking = await Booking.findOne({
+      _id: req.params.bookingId,
+      userId: req.user.userId,
+    }).populate("userId", "name email");
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found.",
+      });
+    }
+
+    if (!["pending", "confirmed"].includes(booking.bookingStatus)) {
+      return res.status(400).json({
+        success: false,
+        message: "This booking cannot be cancelled.",
+      });
+    }
+
+    booking.bookingStatus = "cancelled";
+    booking.isDateReserved = false;
+    await booking.save();
+
+    try {
+      await sendEmail({
+        to: booking.userId.email,
+        subject: "Booking Cancellation - Staycation",
+        html: bookingCancellationEmail({
+          customerName: booking.userId.name,
+          bookingReference: booking.bookingReference,
+          checkIn: booking.checkIn.toLocaleString("en-PH", {
+            timeZone: "Asia/Manila",
+          }),
+          checkOut: booking.checkOut.toLocaleString("en-PH", {
+            timeZone: "Asia/Manila",
+          }),
+          totalAmount: booking.totalAmount,
+          cancellationReason: "Cancelled by customer.",
+        }),
+      });
+    } catch (emailError) {
+      console.error("Booking cancellation email failed:", emailError.message);
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Booking cancelled successfully.",
+      booking,
+    });
+  } catch (error) {
+    console.error("Cancel booking error:", error.message);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to cancel booking.",
     });
   }
 };

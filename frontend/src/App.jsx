@@ -8,6 +8,7 @@ import TheUnit from "./pages/TheUnit";
 import Amenities from "./pages/Amenities";
 import Location from "./pages/Location";
 import HouseRules from "./pages/HouseRules";
+import Login from "./pages/Loginpage";
 
 import Navbar from "./components/Navbar";
 
@@ -29,6 +30,7 @@ function App() {
                 </>
               }
             />
+            <Route path="/login" element={<Login />} />
             <Route path="/google-success" element={<GoogleSuccess />} />
           </Routes>
         </StayProvider>

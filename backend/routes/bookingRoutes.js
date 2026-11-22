@@ -4,6 +4,7 @@ import {
   getMyBookings,
   getAllBookings,
   checkAvailability,
+  cancelBooking,
 } from "../controllers/bookingController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import adminMiddleware from "../middleware/adminMiddleware.js";
@@ -17,5 +18,7 @@ router.get("/my-bookings", authMiddleware, getMyBookings);
 router.get("/all", authMiddleware, adminMiddleware, getAllBookings);
 
 router.get("/availability", checkAvailability);
+
+router.patch("/:bookingId/cancel", authMiddleware, cancelBooking);
 
 export default router;

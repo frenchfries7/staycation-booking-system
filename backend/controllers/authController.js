@@ -1,6 +1,7 @@
 import User from "../models/user.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
@@ -105,6 +106,15 @@ export const login = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "7d" },
     );
+    const csrfToken = crypto.randomBytes(32).toString("hex");
+
+    res.cookie("csrfToken", csrfToken, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 60 * 60 * 1000,
+      path: "/",
+    });
     res.cookie("token", token, cookieOptions);
 
     return res.status(200).json({

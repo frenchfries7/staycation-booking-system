@@ -1,6 +1,8 @@
 import crypto from "crypto";
 import Payment from "../models/payment.js";
 import Booking from "../models/booking.js";
+import sendEmail from "../utils/emailService.js";
+import paymentReceiptEmail from "../utils/paymentReceiptEmail.js";
 
 const verifyPayMongoSignature = (rawBody, signatureHeader) => {
   const webhookSecret = process.env.PAYMONGO_WEBHOOK_SECRET;
@@ -141,7 +143,10 @@ export const handlePayMongoWebhook = async (req, res) => {
       });
     }
 
-    const booking = await Booking.findById(payment.bookingId);
+    const booking = await Booking.findById(payment.bookingId).populate(
+      "userId",
+      "name email",
+    );
 
     if (!booking) {
       return res.status(200).json({
@@ -149,10 +154,6 @@ export const handlePayMongoWebhook = async (req, res) => {
         message: "Booking not found. Event acknowledged for review.",
       });
     }
-
-    // Mark the actual successful payment.
-    payment.paymentStatus = "completed";
-    await payment.save();
 
     // DOWNPAYMENT: confirm booking only if it is still reserved.
     if (payment.paymentPurpose === "downpayment") {
@@ -164,6 +165,9 @@ export const handlePayMongoWebhook = async (req, res) => {
         booking.expiresAt > new Date();
 
       if (!isEligible) {
+        payment.paymentStatus = "completed";
+        await payment.save();
+
         console.error(
           "Late or ineligible downpayment requires manual review:",
           booking._id,
@@ -179,6 +183,61 @@ export const handlePayMongoWebhook = async (req, res) => {
       booking.paymentStatus = "partial";
 
       await booking.save();
+      payment.paymentStatus = "completed";
+      await payment.save();
+      try {
+        await sendEmail({
+          to: booking.userId.email,
+          subject: "Booking Confirmation - Staycation",
+          html: `
+      <h1>Booking Confirmed!</h1>
+      <p>Hello ${booking.userId.name},</p>
+
+      <p>Your Staycation reservation has been confirmed.</p>
+
+      <h3>Booking Details</h3>
+      <p><strong>Booking Reference:</strong> ${booking.bookingReference}</p>
+      <p><strong>Check-in:</strong> ${booking.checkIn.toLocaleString("en-PH", {
+        timeZone: "Asia/Manila",
+      })}</p>
+      <p><strong>Check-out:</strong> ${booking.checkOut.toLocaleString(
+        "en-PH",
+        {
+          timeZone: "Asia/Manila",
+        },
+      )}</p>
+      <p><strong>Guests:</strong> ${booking.numberOfGuests}</p>
+
+      <h3>Payment Details</h3>
+      <p><strong>Total:</strong> ₱${booking.totalAmount.toLocaleString("en-PH")}</p>
+      <p><strong>Downpayment Paid:</strong> ₱${payment.amount.toLocaleString("en-PH")}</p>
+      <p><strong>Remaining Balance:</strong> ₱${booking.remainingBalance.toLocaleString("en-PH")}</p>
+
+      <p>Thank you for choosing Staycation!</p>
+    `,
+        });
+        await sendEmail({
+          to: booking.userId.email,
+          subject: "Payment Receipt - Staycation",
+          html: paymentReceiptEmail({
+            customerName: booking.userId.name,
+            bookingReference: booking.bookingReference,
+            paymentPurpose: payment.paymentPurpose,
+            amountPaid: payment.amount,
+            totalAmount: booking.totalAmount,
+            remainingBalance: booking.remainingBalance,
+            paymentMethod: payment.paymentMethod,
+            paymentDate: new Date().toLocaleString("en-PH", {
+              timeZone: "Asia/Manila",
+            }),
+          }),
+        });
+
+        payment.receiptEmailSentAt = new Date();
+        await payment.save();
+      } catch (emailError) {
+        console.error("Booking confirmation email failed:", emailError.message);
+      }
     }
 
     // BALANCE: mark the booking fully paid.
@@ -188,6 +247,9 @@ export const handlePayMongoWebhook = async (req, res) => {
         booking.paymentStatus === "partial";
 
       if (!isEligible) {
+        payment.paymentStatus = "completed";
+        await payment.save();
+
         console.error("Balance payment requires manual review:", booking._id);
 
         return res.status(200).json({
@@ -198,6 +260,33 @@ export const handlePayMongoWebhook = async (req, res) => {
 
       booking.paymentStatus = "fully_paid";
       await booking.save();
+      payment.paymentStatus = "completed";
+      await payment.save();
+      if (!payment.receiptEmailSentAt) {
+        try {
+          await sendEmail({
+            to: booking.userId.email,
+            subject: "Payment Receipt - Staycation",
+            html: paymentReceiptEmail({
+              customerName: booking.userId.name,
+              bookingReference: booking.bookingReference,
+              paymentPurpose: payment.paymentPurpose,
+              amountPaid: payment.amount,
+              totalAmount: booking.totalAmount,
+              remainingBalance: booking.remainingBalance,
+              paymentMethod: payment.paymentMethod,
+              paymentDate: new Date().toLocaleString("en-PH", {
+                timeZone: "Asia/Manila",
+              }),
+            }),
+          });
+
+          payment.receiptEmailSentAt = new Date();
+          await payment.save();
+        } catch (emailError) {
+          console.error("Balance receipt email failed:", emailError.message);
+        }
+      }
     }
 
     return res.status(200).json({
