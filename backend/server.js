@@ -25,6 +25,10 @@ app.use(helmet());
 app.post(
   "/api/payments/webhook",
   express.raw({ type: "application/json" }),
+  (req, res, next) => {
+    console.log("PAYMONGO WEBHOOK HIT");
+    next();
+  },
   handlePayMongoWebhook,
 );
 

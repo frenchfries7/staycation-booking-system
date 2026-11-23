@@ -60,6 +60,8 @@ const verifyPayMongoSignature = (rawBody, signatureHeader) => {
 
 export const handlePayMongoWebhook = async (req, res) => {
   try {
+    console.log("PAYMONGO WEBHOOK HIT");
+
     const signatureHeader = req.headers["paymongo-signature"];
 
     if (!verifyPayMongoSignature(req.body, signatureHeader)) {
@@ -72,6 +74,7 @@ export const handlePayMongoWebhook = async (req, res) => {
     const event = JSON.parse(req.body.toString("utf8"));
 
     const eventType = event.data?.attributes?.type;
+    console.log("PayMongo webhook event:", eventType);
     const eventData = event.data?.attributes?.data;
     const attributes = eventData?.attributes;
 
@@ -261,11 +264,17 @@ export const handlePayMongoWebhook = async (req, res) => {
       }
 
       booking.paymentStatus = "fully_paid";
+      booking.remainingBalance = 0; // <-- I-zero na ang remaining balance
       await booking.save();
+
       payment.paymentStatus = "completed";
       await payment.save();
+
       const doorAccess = await DoorAccess.findOne();
-      if (doorAccess && !booking.doorAccessEmailSentAt) {
+
+      if (!doorAccess) {
+        console.error("DoorAccess document missing in database!");
+      } else if (!booking.doorAccessEmailSentAt) {
         try {
           await sendEmail({
             to: booking.userId.email,
@@ -279,9 +288,10 @@ export const handlePayMongoWebhook = async (req, res) => {
           booking.doorAccessEmailSentAt = new Date();
           await booking.save();
         } catch (error) {
-          console.error("Door access email failed:", error.message);
+          console.error("Door access email failed:", error);
         }
       }
+
       if (!payment.receiptEmailSentAt) {
         try {
           await sendEmail({
