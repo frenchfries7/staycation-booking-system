@@ -82,7 +82,9 @@ export default function Navbar({ onLoginClick }) {
                   {link.label}
                 </Dropdown.Item>
               ))}
-              <Dropdown.Item href={bookHref}>Book Now</Dropdown.Item>
+              <Dropdown.Item href={bookHref} className="br-book-item">
+                Book Now
+              </Dropdown.Item>
               <Dropdown.Divider />
             </div>
 
