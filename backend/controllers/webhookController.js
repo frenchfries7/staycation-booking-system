@@ -3,6 +3,8 @@ import Payment from "../models/payment.js";
 import Booking from "../models/booking.js";
 import sendEmail from "../utils/emailService.js";
 import paymentReceiptEmail from "../utils/paymentReceiptEmail.js";
+import DoorAccess from "../models/doorAccess.js";
+import doorAccessEmail from "../utils/doorAccessEmail.js";
 
 const verifyPayMongoSignature = (rawBody, signatureHeader) => {
   const webhookSecret = process.env.PAYMONGO_WEBHOOK_SECRET;
@@ -262,6 +264,24 @@ export const handlePayMongoWebhook = async (req, res) => {
       await booking.save();
       payment.paymentStatus = "completed";
       await payment.save();
+      const doorAccess = await DoorAccess.findOne();
+      if (doorAccess && !booking.doorAccessEmailSentAt) {
+        try {
+          await sendEmail({
+            to: booking.userId.email,
+            subject: "Staycation Door Access Code",
+            html: doorAccessEmail({
+              customerName: booking.userId.name,
+              bookingReference: booking.bookingReference,
+              accessCode: doorAccess.accessCode,
+            }),
+          });
+          booking.doorAccessEmailSentAt = new Date();
+          await booking.save();
+        } catch (error) {
+          console.error("Door access email failed:", error.message);
+        }
+      }
       if (!payment.receiptEmailSentAt) {
         try {
           await sendEmail({
