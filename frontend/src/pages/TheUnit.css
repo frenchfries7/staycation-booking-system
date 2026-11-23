@@ -232,3 +232,153 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* The 4 small photos: hover (or tap) one and it shows in the big image
+   until you move away. The one being shown gets an outline. */
+.unit__tile {
+  cursor: pointer;
+  outline: 2px solid transparent;
+  outline-offset: 3px;
+  transition:
+    transform 0.15s ease,
+    outline-color 0.25s ease;
+}
+.unit__tile img {
+  animation: unitFade 0.35s ease;
+}
+.unit__tile.is-showing {
+  outline-color: var(--u-navy);
+}
+
+/* Invisible strips just above the first and below the last button.
+   Hovering them rotates the list; hovering a button previews its photos. */
+.unit__areas {
+  position: relative;
+}
+.unit__edge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 24px;
+  z-index: 2;
+}
+.unit__edge--up {
+  top: -24px;
+}
+.unit__edge--down {
+  bottom: -24px;
+}
+
+/* Area buttons slide into their new slot when the list rotates */
+.unit__area-item {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.unit__area-item .unit__area {
+  flex: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .unit__tile img {
+    animation: none;
+  }
+  .unit__tile {
+    transition: none;
+  }
+  .unit__area-item {
+    transition: none;
+  }
+}
+
+/* On tablet / mobile the buttons are a grid, so no rotation */
+@media (max-width: 991.98px) {
+  .unit__edge {
+    display: none;
+  }
+  .unit__area-item {
+    transform: none !important;
+  }
+}
+
+/* The 4 small photos: hover (or tap) one and it shows in the big image
+   until you move away. The one being shown gets an outline. */
+.unit__tile {
+  cursor: pointer;
+  outline: 2px solid transparent;
+  outline-offset: 3px;
+  transition:
+    transform 0.15s ease,
+    outline-color 0.25s ease;
+}
+.unit__tile img {
+  animation: unitFade 0.35s ease;
+}
+.unit__tile.is-showing {
+  outline-color: var(--u-navy);
+}
+
+/* Touch screens: no sticky hover lift, and no double-tap-zoom delay */
+.unit__tile,
+.unit__area {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+@media (hover: none) {
+  .unit__tile:hover {
+    transform: none;
+  }
+}
+
+/* Invisible strips just above the first and below the last button.
+   Hovering them rotates the list; hovering a button previews its photos. */
+.unit__areas {
+  position: relative;
+}
+.unit__edge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 24px;
+  z-index: 2;
+}
+.unit__edge--up {
+  top: -24px;
+}
+.unit__edge--down {
+  bottom: -24px;
+}
+
+/* Area buttons slide into their new slot when the list rotates */
+.unit__area-item {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.unit__area-item .unit__area {
+  flex: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .unit__tile img {
+    animation: none;
+  }
+  .unit__tile {
+    transition: none;
+  }
+  .unit__area-item {
+    transition: none;
+  }
+}
+
+/* On tablet / mobile the buttons are a grid, so no rotation */
+@media (max-width: 991.98px) {
+  .unit__edge {
+    display: none;
+  }
+  .unit__area-item {
+    transform: none !important;
+  }
+}
