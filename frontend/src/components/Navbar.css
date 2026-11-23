@@ -92,7 +92,7 @@
 .br-book {
   align-items: center;
   padding: 0.55rem 1.25rem;
-  background: #5f7a93;
+  background: #32485C;
   color: #fff;
   font-size: 0.95rem;
   font-weight: 500;
@@ -103,6 +103,25 @@
 }
 .br-book:hover,
 .br-book:focus-visible {
+  background: #4f6a82;
+  color: #fff;
+}
+
+/* Book Now inside the mobile menu: same look as the desktop button,
+   with the text lined up with the other menu items */
+.br-menu .dropdown-item.br-book-item {
+  margin: 0.5rem 0 0.25rem;
+  padding: 0.4rem 1rem; /* same left padding as the other items */
+  background: #32485c;
+  color: #fff;
+  font-weight: 500;
+  text-align: left;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+.br-menu .dropdown-item.br-book-item:hover,
+.br-menu .dropdown-item.br-book-item:focus,
+.br-menu .dropdown-item.br-book-item:active {
   background: #4f6a82;
   color: #fff;
 }
