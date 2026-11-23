@@ -1,0 +1,436 @@
+/* Reservation modal (also used by the payment result page) */
+.book-modal {
+  --m-navy: #1f2547;
+  --m-primary: #0f3a62;
+  --m-muted: #5a7391;
+  --m-text: #1b1f33;
+  --m-line: #e8e6df;
+  --m-soft: #f5f3ee;
+  --bs-modal-width: 520px;
+}
+
+.book-modal .modal-content {
+  border: 0;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 24px 60px rgba(31, 37, 71, 0.25);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--m-text);
+  overflow: hidden;
+}
+
+.book-modal .modal-header {
+  position: relative;
+  align-items: flex-start;
+  padding: 1.6rem 4rem 0.75rem 1.75rem; /* room on the right for the close button */
+  border: 0;
+}
+/* Close button sits in the top-right corner of the modal */
+.book-modal .btn-close {
+  position: absolute;
+  top: 1.2rem;
+  right: 1.2rem;
+  margin: 0;
+  padding: 0.55rem;
+  opacity: 0.55;
+}
+.book-modal .btn-close:hover {
+  opacity: 1;
+}
+.bm__step {
+  margin: 0 0 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--m-muted);
+}
+.book-modal .modal-title {
+  font-family: "DM Serif Display", Georgia, serif;
+  font-weight: 400;
+  font-size: 1.6rem;
+  line-height: 1.2;
+  color: var(--m-navy);
+}
+
+.book-modal .modal-body {
+  padding: 0.5rem 1.75rem 1.5rem;
+}
+.book-modal .modal-footer {
+  gap: 0.6rem;
+  padding: 1rem 1.75rem 1.5rem;
+  border-top: 1px solid var(--m-line);
+  background: #fff;
+}
+
+/* ---------- Account ---------- */
+.bm__account {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 1.25rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--m-line);
+  border-radius: 14px;
+}
+.bm__avatar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--m-navy);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+}
+.bm__account > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.bm__account-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--m-muted);
+}
+.bm__account strong {
+  font-size: 0.95rem;
+  color: var(--m-navy);
+  overflow-wrap: anywhere;
+}
+.bm__account div > span:last-child {
+  font-size: 0.82rem;
+  color: var(--m-muted);
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Stay details ---------- */
+.bm__details {
+  margin: 0 0 1.25rem;
+  border: 1px solid var(--m-line);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.bm__detail {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+}
+.bm__detail + .bm__detail {
+  border-top: 1px solid var(--m-line);
+}
+.bm__detail dt {
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: var(--m-muted);
+}
+.bm__detail dd {
+  margin: 0;
+  text-align: right;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--m-navy);
+}
+.bm__detail dd small {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--m-muted);
+}
+
+/* ---------- Price ---------- */
+.bm__totals {
+  margin-bottom: 0.9rem;
+}
+.bm__totals-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.3rem 0;
+  font-size: 0.88rem;
+  color: var(--m-muted);
+}
+.bm__totals-row--total {
+  margin-top: 0.4rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--m-line);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--m-navy);
+}
+
+.bm__due {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
+  background: #eaf0f6;
+  color: var(--m-primary);
+}
+.bm__due span {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+.bm__due strong {
+  font-size: 1.45rem;
+  line-height: 1;
+}
+.bm__help {
+  margin: 0.65rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--m-muted);
+}
+
+/* ---------- Notes ---------- */
+.bm__hold,
+.bm__timer {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.8rem 1rem;
+  border-radius: 12px;
+  background: #f6f1e7;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #7a6440;
+}
+.bm__hold {
+  margin: 1.1rem 0;
+}
+.bm__timer {
+  align-items: center;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+}
+.bm__hold svg,
+.bm__timer svg {
+  flex: none;
+}
+.bm__hold svg {
+  margin-top: 0.15rem;
+}
+.bm__timer strong {
+  margin-left: auto;
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.bm__agree {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: #3b4160;
+  cursor: pointer;
+}
+.bm__agree input {
+  flex: none;
+  margin-top: 0.2rem;
+  accent-color: var(--m-primary);
+}
+.bm__agree a {
+  color: var(--m-primary);
+}
+
+.bm__error {
+  margin: 1rem 0 0;
+  padding: 0.7rem 0.9rem;
+  border-radius: 12px;
+  background: #fbeeea;
+  font-size: 0.85rem;
+  color: #a4442c;
+}
+
+/* ---------- Payment step ---------- */
+.bm__ref-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
+  background: var(--m-soft);
+}
+.bm__ref-card > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.bm__ref-card span {
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--m-muted);
+}
+.bm__ref-card strong {
+  margin-top: 0.15rem;
+  font-size: 0.95rem;
+  color: var(--m-navy);
+  overflow-wrap: anywhere;
+}
+.bm__ref-card small {
+  font-size: 0.78rem;
+  color: var(--m-muted);
+}
+
+.bm__heading {
+  margin: 1.4rem 0 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--m-navy);
+}
+.bm__methods {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+.bm__method {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  height: 52px;
+  border: 1px solid #d9dce2;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--m-navy);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.bm__method:hover {
+  border-color: var(--m-primary);
+}
+.bm__method input {
+  accent-color: var(--m-primary);
+}
+.bm__method.is-selected {
+  border-color: var(--m-primary);
+  background: #f1f5f9;
+}
+.bm__method:focus-within {
+  outline: 2px solid var(--m-primary);
+  outline-offset: 2px;
+}
+
+.bm__warn {
+  margin: 1rem 0 0;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: #fbeeea;
+}
+.bm__warn p {
+  margin: 0 0 0.7rem;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: #a4442c;
+}
+.bm__warn-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.bm__warn .bm__btn {
+  height: 38px;
+  font-size: 0.82rem;
+}
+
+/* ---------- Buttons ---------- */
+.bm__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 46px;
+  padding: 0 1.4rem;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.bm__btn--primary {
+  background: var(--m-primary);
+  color: #fff;
+}
+.bm__btn--primary:hover:not(:disabled) {
+  background: #0b2d4d;
+  color: #fff;
+}
+.bm__btn--primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.bm__btn--ghost {
+  background: #fff;
+  border-color: #d9dce2;
+  color: var(--m-navy);
+}
+.bm__btn--ghost:hover:not(:disabled) {
+  border-color: var(--m-primary);
+}
+
+/* ---------- Payment result page ---------- */
+.bm__success {
+  padding: 2.5rem 2rem 2rem;
+  text-align: center;
+}
+.bm__success h4 {
+  margin: 0 0 0.5rem;
+  font-family: "DM Serif Display", Georgia, serif;
+  font-weight: 400;
+  font-size: 1.5rem;
+  color: #1f2547;
+}
+.bm__success p {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #5a7391;
+}
+.bm__ref {
+  word-break: break-all;
+}
+.bm__actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+}
+
+/* ---------- Small screens ---------- */
+@media (max-width: 575.98px) {
+  .book-modal .modal-header {
+    padding-left: 1.25rem;
+    padding-right: 3.5rem;
+  }
+  .book-modal .btn-close {
+    top: 1rem;
+    right: 1rem;
+  }
+  .book-modal .modal-body,
+  .book-modal .modal-footer {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+  .bm__ref-card {
+    grid-template-columns: 1fr;
+  }
+  .book-modal .modal-footer {
+    flex-direction: column-reverse;
+  }
+  .book-modal .modal-footer .bm__btn {
+    width: 100%;
+    margin: 0;
+  }
+}
