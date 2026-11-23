@@ -74,6 +74,10 @@ const bookingSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    doorAccessEmailSentAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

@@ -4,6 +4,7 @@ import expirePendingBookings from "../utils/expirePendingBookings.js";
 import { randomBytes } from "crypto";
 import sendEmail from "../utils/emailService.js";
 import bookingCancellationEmail from "../utils/bookingCancellationEmail.js";
+import bookingConfirmationEmail from "../utils/bookingConfirmationEmail.js";
 
 // Create booking
 export const createBooking = async (req, res) => {
@@ -115,6 +116,38 @@ export const createBooking = async (req, res) => {
       expiresAt: new Date(Date.now() + 15 * 60 * 1000),
       isDateReserved: true,
     });
+
+    // Send booking confirmation email
+    try {
+      await booking.populate("userId", "name email");
+
+      if (!booking.userId?.email) {
+        throw new Error("Customer email not found.");
+      }
+
+      await sendEmail({
+        to: booking.userId.email,
+        subject: "Booking Confirmation - Staycation",
+        html: bookingConfirmationEmail({
+          customerName: booking.userId.name,
+          bookingReference: booking.bookingReference,
+          checkIn: booking.checkIn.toLocaleString("en-PH", {
+            timeZone: "Asia/Manila",
+          }),
+          checkOut: booking.checkOut.toLocaleString("en-PH", {
+            timeZone: "Asia/Manila",
+          }),
+          numberOfGuests: booking.numberOfGuests,
+          totalAmount: booking.totalAmount,
+          downpaymentAmount: booking.downpaymentAmount,
+          remainingBalance: booking.remainingBalance,
+        }),
+      });
+
+      console.log("Booking confirmation email sent.");
+    } catch (emailError) {
+      console.error("Booking confirmation email failed:", emailError);
+    }
 
     return res.status(201).json({
       success: true,

@@ -168,8 +168,6 @@ export const createPayment = async (req, res) => {
       const actualStatus = statusResult.data.attributes.status;
 
       if (actualStatus === "succeeded") {
-        await updatePaymentStatus(existingPayment, "succeeded");
-
         return res.status(409).json({
           success: false,
           message:
@@ -425,9 +423,7 @@ export const getPaymentStatus = async (req, res) => {
     const actualStatus = result.data.attributes.status;
 
     // STEP 5: Update local payment status
-    if (actualStatus === "succeeded") {
-      await updatePaymentStatus(payment, "succeeded");
-    } else if (actualStatus === "cancelled") {
+    if (actualStatus === "cancelled") {
       await updatePaymentStatus(payment, "cancelled");
     }
 
