@@ -24,6 +24,7 @@ import PaymentResult from "./pages/PaymentResult";
 // CLIENT COMPONENTS
 import Navbar from "./components/Navbar";
 import LoginModal from "./components/LoginModal";
+import MyBookings from "./pages/MyBookings";
 
 // ADMIN COMPONENTS
 import AdminLayout from "./admin/layout/AdminLayout";
@@ -124,6 +125,7 @@ function App() {
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="/my-bookings" element={<MyBookings />} />
           </Routes>
         </StayProvider>
       </AuthProvider>
