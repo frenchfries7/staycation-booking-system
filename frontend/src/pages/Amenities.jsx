@@ -58,7 +58,7 @@ const AMENITIES = [
     ),
   },
   {
-    label: "Kitchenette & cooking utensils",
+    label: "Kitchenette & Cooking Utensils",
     icon: (
       <Icon>
         <path d="M3 2v7a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V2" />
@@ -68,7 +68,7 @@ const AMENITIES = [
     ),
   },
   {
-    label: "Electric kettle / rice cooker / microwave",
+    label: "Electric Kettle / Rice Cooker / Microwave",
     icon: (
       <Icon>
         <rect x="2" y="4" width="20" height="15" rx="2" />
@@ -88,7 +88,7 @@ const AMENITIES = [
     ),
   },
   {
-    label: "Smart lock / self check-in",
+    label: "Smart Lock / Self Check-in",
     icon: (
       <Icon>
         <rect x="5" y="11" width="14" height="10" rx="2" />
@@ -98,7 +98,7 @@ const AMENITIES = [
     ),
   },
   {
-    label: "Comfortable bed & fresh linens",
+    label: "Comfortable Bed & Fresh Linens",
     icon: (
       <Icon>
         <path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8" />
@@ -108,7 +108,7 @@ const AMENITIES = [
     ),
   },
   {
-    label: "Swimming pool access",
+    label: "Swimming Pool Access",
     icon: (
       <Icon>
         <path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
