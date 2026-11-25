@@ -34,8 +34,18 @@ function LoginModal({ isOpen, onClose }) {
         throw new Error(data.message || "Login failed.");
       }
 
+      // Ask who just logged in so admins go to the admin dashboard
+      const meResponse = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/auth/me`,
+        {
+          credentials: "include",
+        },
+      );
+      const meData = await meResponse.json();
+
       onClose();
-      window.location.reload();
+      window.location.href =
+        meData.user?.role === "admin" ? "/admin/dashboard" : "/";
     } catch (error) {
       setError(error.message);
     } finally {
