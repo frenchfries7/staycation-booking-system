@@ -7,7 +7,7 @@ import {
   Outlet,
 } from "react-router-dom";
 
-import { AuthProvider, useAuth } from "./context/AuthContext";
+import { AuthProvider } from "./context/AuthContext";
 import { StayProvider } from "./context/StayContext";
 
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -42,19 +42,6 @@ function ClientLayout({ showLogin, openLogin, closeLogin }) {
       <Outlet />
     </>
   );
-}
-
-// Only admins can open the /admin pages
-function AdminRoute() {
-  const { user, loading } = useAuth();
-
-  if (loading) return null; // wait for /auth/me to finish
-
-  if (!user || user.role !== "admin") {
-    return <Navigate to="/" replace />;
-  }
-
-  return <Outlet />;
 }
 
 function App() {
@@ -98,30 +85,25 @@ function App() {
               />
             </Route>
 
-            <Route element={<AdminRoute />}>
-              <Route path="/admin" element={<AdminLayout />}>
-                <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<Navigate to="dashboard" replace />} />
 
-                <Route path="dashboard" element={<Overview />} />
+              <Route path="dashboard" element={<Overview />} />
 
-                <Route path="booking" element={<Booking />} />
+              <Route path="booking" element={<Booking />} />
 
-                <Route path="calendar" element={<Calendar />} />
+              <Route path="calendar" element={<Calendar />} />
 
-                <Route
-                  path="customers"
-                  element={<div>Customer Management</div>}
-                />
+              <Route
+                path="customers"
+                element={<div>Customer Management</div>}
+              />
 
-                <Route
-                  path="payments"
-                  element={<div>Payment Management</div>}
-                />
+              <Route path="payments" element={<div>Payment Management</div>} />
 
-                <Route path="property" element={<div>Property Details</div>} />
+              <Route path="property" element={<div>Property Details</div>} />
 
-                <Route path="settings" element={<div>Admin Settings</div>} />
-              </Route>
+              <Route path="settings" element={<div>Admin Settings</div>} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />
