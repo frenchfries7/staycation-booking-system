@@ -41,7 +41,7 @@ const csrfMiddleware = (req, res, next) => {
   ) {
     return res.status(403).json({
       success: false,
-      message: "Invalid CSRF token.",
+      message: "Invalid token, please log-in again.",
     });
   }
 
