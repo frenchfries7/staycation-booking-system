@@ -3,6 +3,10 @@ import "./TheUnit.css";
 
 const photo = (slug, name) => `/images/unit/${slug}-${name}`;
 
+// DESIGN: display-only price (replace with accommodation.price when you pass it in)
+const PRICE_PER_NIGHT = 2500;
+const formatPrice = (n) => `₱${n.toLocaleString("en-PH")}`;
+
 const AREAS = [
   { slug: "living-room", label: "Living room" },
   { slug: "bedroom", label: "Bedroom area" },
@@ -214,6 +218,32 @@ export default function TheUnit() {
           {/* Big image */}
           <div className="unit__main">
             <Photo key={mainSrc} base={mainSrc} alt={viewArea.label} />
+
+            {/* DESIGN: small price tag on the photo */}
+            <a
+              className="unit__price-tag"
+              href="#book"
+              aria-label={`From ${formatPrice(PRICE_PER_NIGHT)} per night. Book now`}
+            >
+              <span className="unit__price-tag-amount">
+                {formatPrice(PRICE_PER_NIGHT)}
+              </span>
+              <span className="unit__price-tag-unit">/ night</span>
+              <span className="unit__price-tag-go" aria-hidden="true">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </span>
+            </a>
           </div>
 
           {/* 4 feature images: display only, they follow the hovered / selected area */}
@@ -317,6 +347,19 @@ export default function TheUnit() {
         </p>
 
         <hr className="unit__divider unit__divider--end" />
+
+        {/* DESIGN: sticky price bar, mobile / tablet only */}
+        <div className="unit__bar">
+          <div>
+            <span className="unit__bar-from">From</span>
+            <p className="unit__bar-price">
+              <strong>{formatPrice(PRICE_PER_NIGHT)}</strong> / night
+            </p>
+          </div>
+          <a href="#book" className="unit__bar-btn">
+            Book now
+          </a>
+        </div>
       </div>
     </section>
   );
