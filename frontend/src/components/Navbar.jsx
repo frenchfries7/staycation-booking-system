@@ -55,11 +55,97 @@ export default function Navbar({ onLoginClick }) {
     <header className="br-navbar">
       <Container fluid className="px-4 px-lg-5 d-flex align-items-center">
         <Link to="/" className="br-brand d-flex align-items-center gap-2">
-          <img
-            src="/images/unit/logo.png"
-            alt="B&R Hideaway logo"
+          <svg
+            width="44"
+            height="44"
+            viewBox="0 0 100 100"
             className="br-brand-logo"
-          />
+            aria-label="B&R Hideaway logo"
+          >
+            <circle cx="50" cy="50" r="48" fill="#ffffff" />
+            <circle
+              cx="50"
+              cy="50"
+              r="45"
+              fill="none"
+              stroke="#1f2547"
+              strokeWidth="3.2"
+            />
+            <circle
+              cx="50"
+              cy="50"
+              r="41"
+              fill="none"
+              stroke="#c8a97e"
+              strokeWidth="1.6"
+            />
+            {/* Sun */}
+            <circle cx="54" cy="40" r="14" fill="#e6c79c" />
+            {/* Stars */}
+            <path
+              d="M72 26l1.5 3.5 3.5 1.5-3.5 1.5L72 36l-1.5-3.5L67 31l3.5-1.5z"
+              fill="#c8a97e"
+            />
+            <path
+              d="M79 35l1 2.2 2.2 1-2.2 1L79 41.5l-1-2.3-2.2-1 2.2-1z"
+              fill="#c8a97e"
+            />
+            {/* Palm trunk & leaves */}
+            <path
+              d="M31 58 Q33 44 30 34"
+              fill="none"
+              stroke="#1f2547"
+              strokeWidth="2.6"
+              strokeLinecap="round"
+            />
+            <path
+              d="M30 34 Q22 31 18 36 M30 34 Q23 27 19 29 M30 34 Q35 27 40 31 M30 34 Q36 33 39 38"
+              fill="none"
+              stroke="#1f2547"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+            />
+            {/* House roof & window */}
+            <path
+              d="M36 46 L54 31 L72 46"
+              fill="none"
+              stroke="#1f2547"
+              strokeWidth="4.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path d="M41 44 L54 33 L67 44 L67 57 L41 57 Z" fill="#1f2547" />
+            <rect x="50.5" y="43" width="3" height="3" fill="#ffffff" />
+            <rect x="54.5" y="43" width="3" height="3" fill="#ffffff" />
+            <rect x="50.5" y="47" width="3" height="3" fill="#ffffff" />
+            <rect x="54.5" y="47" width="3" height="3" fill="#ffffff" />
+            {/* Wave */}
+            <path
+              d="M16 58 Q36 52 54 57 T84 56"
+              fill="none"
+              stroke="#ffffff"
+              strokeWidth="2.5"
+            />
+            <path
+              d="M16 59 Q36 53 54 58 T84 57"
+              fill="none"
+              stroke="#1f2547"
+              strokeWidth="2.4"
+            />
+            {/* Bold B&R */}
+            <text
+              x="50"
+              y="77"
+              textAnchor="middle"
+              fill="#1f2547"
+              fontFamily="Georgia, serif"
+              fontWeight="700"
+              fontSize="20"
+              letterSpacing="1"
+            >
+              B&amp;R
+            </text>
+          </svg>
           <span>B&amp;R Hideaway</span>
         </Link>
 
