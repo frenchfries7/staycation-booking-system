@@ -44,6 +44,7 @@
   border-radius: 999px;
   color: var(--br-navy);
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.03);
+  position: relative; /* ADDED: anchor for the red dot */
 }
 .br-pill::after {
   display: none; /* hide Bootstrap's dropdown caret */
@@ -86,6 +87,33 @@
 .br-hello {
   font-weight: 600;
   color: var(--br-navy);
+}
+
+/* ADDED: red dot on the menu pill (unpaid booking reminder) */
+.br-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #e24b4a;
+  border: 2px solid var(--br-bg);
+  pointer-events: none;
+}
+
+/* ADDED: count badge next to "My bookings" */
+.br-count {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #e24b4a;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.4;
+  vertical-align: middle;
 }
 
 /* Book Now button */
