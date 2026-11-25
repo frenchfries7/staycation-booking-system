@@ -43,7 +43,8 @@ app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.get("/api/csrf-token", (req, res) => {
-  const csrfToken = crypto.randomBytes(32).toString("hex");
+  const csrfToken =
+    req.cookies?.csrfToken || crypto.randomBytes(32).toString("hex");
 
   res.cookie("csrfToken", csrfToken, {
     httpOnly: false,
