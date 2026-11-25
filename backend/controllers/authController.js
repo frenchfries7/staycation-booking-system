@@ -170,3 +170,72 @@ export const logout = (req, res) => {
     message: "Logged out successfully.",
   });
 };
+
+export const updateInformation = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, email, role } = req.body;
+
+    if (!name?.trim() || !email?.trim() || !role) {
+      return res.status(400).json({
+        success: false,
+        message: "Name, email, and role are required.",
+      });
+    }
+
+    if (!["customer", "admin"].includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid user role.",
+      });
+    }
+
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const existingEmail = await User.findOne({
+      email: normalizedEmail,
+      _id: { $ne: id },
+    });
+
+    if (existingEmail) {
+      return res.status(409).json({
+        success: false,
+        message: "Email is already in use.",
+      });
+    }
+
+    user.name = name.trim();
+    user.email = normalizedEmail;
+    user.role = role;
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "User information updated successfully.",
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        profilePicture: user.profilePicture,
+      },
+    });
+  } catch (error) {
+    console.error("Update user information error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update user information.",
+    });
+  }
+};
