@@ -23,7 +23,7 @@ const accommodationSchema = new mongoose.Schema(
     capacity: {
       type: Number,
       required: true,
-      min: 1,
+      min: 2,
     },
 
     amenities: {
