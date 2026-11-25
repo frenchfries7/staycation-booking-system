@@ -885,6 +885,16 @@ export default function BookYourStay({ onLoginClick }) {
                 · balance of {peso(pending.balance)} is paid before your stay.
               </p>
 
+              {/* ADDED: door access reminder */}
+              <div className="bm__warn" role="note">
+                <p>
+                  Complete your <strong>full payment right away</strong>. You
+                  won’t receive your <strong>door access code</strong> until
+                  your booking is fully paid. You can also pay anytime from{" "}
+                  <strong>My bookings</strong> in the menu.
+                </p>
+              </div>
+
               {poolUnresolved && (
                 <div className="bm__warn" role="alert">
                   <p>
