@@ -54,8 +54,13 @@ export default function Navbar({ onLoginClick }) {
   return (
     <header className="br-navbar">
       <Container fluid className="px-4 px-lg-5 d-flex align-items-center">
-        <Link to="/" className="br-brand d-flex align-items-center gap-3">
-          B&amp;R Hideaway
+        <Link to="/" className="br-brand d-flex align-items-center gap-2">
+          <img
+            src="/images/unit/logo.png"
+            alt="B&R Hideaway logo"
+            className="br-brand-logo"
+          />
+          <span>B&amp;R Hideaway</span>
         </Link>
 
         {/* Center links (desktop) */}

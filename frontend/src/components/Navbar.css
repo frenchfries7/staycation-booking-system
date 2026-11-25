@@ -1,5 +1,5 @@
 .br-navbar {
-  --br-bg: #FAF9F5;
+  --br-bg: #faf9f5;
   --br-border: #e6e4dc;
   --br-navy: #1f2547;
   --br-text: #4b5063;
@@ -8,7 +8,12 @@
   background: var(--br-bg);
   border-bottom: 1px solid var(--br-border);
   padding-block: 1rem;
-  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -22,6 +27,13 @@
 }
 .br-brand:hover {
   color: var(--br-navy);
+}
+.br-brand-logo {
+  width: 40px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
 }
 
 .br-links .nav-link {
@@ -120,7 +132,7 @@
 .br-book {
   align-items: center;
   padding: 0.55rem 1.25rem;
-  background: #32485C;
+  background: #32485c;
   color: #fff;
   font-size: 0.95rem;
   font-weight: 500;
