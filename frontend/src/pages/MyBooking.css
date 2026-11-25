@@ -1,0 +1,306 @@
+/* My Bookings - matches the B&R Hideaway theme (cream bg, navy, serif headings).
+   If your other pages use CSS variables (e.g. --navy, --font-serif), swap these tokens. */
+.mb-page {
+  --mb-bg: #faf8f5;
+  --mb-card: #ffffff;
+  --mb-navy: #14365c;
+  --mb-ink: #1a1f3c;
+  --mb-muted: #5b7089;
+  --mb-line: #ebe7e0;
+  --mb-soft: #f1eee8;
+  --mb-serif: "DM Serif Display", Georgia, serif;
+
+  background: var(--mb-bg);
+  color: var(--mb-ink);
+  min-height: calc(100vh - 102px);
+  padding: 56px 24px 96px;
+}
+
+.mb-wrap {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.mb-eyebrow {
+  margin: 0 0 12px;
+  color: var(--mb-muted);
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mb-title {
+  margin: 0 0 28px;
+  font-family: var(--mb-serif);
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 400;
+  color: var(--mb-ink);
+}
+
+.mb-state {
+  color: var(--mb-muted);
+  font-size: 1.05rem;
+  margin: 0 0 16px;
+}
+
+/* Filters */
+.mb-filters {
+  display: inline-flex;
+  gap: 6px;
+  padding: 5px;
+  margin-bottom: 24px;
+  background: var(--mb-soft);
+  border-radius: 999px;
+}
+
+.mb-filter {
+  border: 0;
+  background: transparent;
+  color: var(--mb-muted);
+  padding: 8px 18px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.mb-filter.is-active {
+  background: var(--mb-navy);
+  color: #fff;
+}
+
+.mb-filter:focus-visible,
+.mb-btn:focus-visible {
+  outline: 2px solid var(--mb-navy);
+  outline-offset: 2px;
+}
+
+/* Alerts */
+.mb-alert {
+  margin: 0 0 20px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+}
+
+.mb-alert--error {
+  background: #fbeceb;
+  color: #9b2c2c;
+}
+
+.mb-alert--ok {
+  background: #e8f1ea;
+  color: #2f6b45;
+}
+
+/* List + cards */
+.mb-list {
+  display: grid;
+  gap: 20px;
+}
+
+.mb-card {
+  background: var(--mb-card);
+  border: 1px solid var(--mb-line);
+  border-radius: 20px;
+  padding: 28px;
+}
+
+.mb-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.mb-ref {
+  margin: 0 0 6px;
+  color: var(--mb-muted);
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+}
+
+.mb-dates {
+  margin: 0;
+  font-family: var(--mb-serif);
+  font-size: 1.6rem;
+  font-weight: 400;
+}
+
+/* Status badges */
+.mb-badge {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  background: var(--mb-soft);
+  color: var(--mb-muted);
+}
+
+.mb-badge--pending {
+  background: #fcf1dc;
+  color: #8a5a00;
+}
+
+.mb-badge--confirmed {
+  background: #e3ecf6;
+  color: var(--mb-navy);
+}
+
+.mb-badge--completed {
+  background: #e8f1ea;
+  color: #2f6b45;
+}
+
+.mb-badge--cancelled,
+.mb-badge--expired {
+  background: var(--mb-soft);
+  color: #8a8a8a;
+}
+
+/* Details */
+.mb-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin: 0 0 24px;
+}
+
+.mb-grid dt {
+  color: var(--mb-muted);
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+}
+
+.mb-grid dd {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.mb-amounts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.mb-amounts > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  background: var(--mb-soft);
+  border-radius: 14px;
+}
+
+.mb-amounts span {
+  color: var(--mb-muted);
+  font-size: 0.85rem;
+}
+
+.mb-amounts strong {
+  font-size: 1.1rem;
+  color: var(--mb-navy);
+}
+
+.mb-hold {
+  margin: 20px 0 0;
+  color: #8a5a00;
+  font-size: 0.95rem;
+}
+
+/* Actions */
+.mb-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--mb-line);
+}
+
+.mb-pay,
+.mb-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.mb-pay-label,
+.mb-confirm span {
+  color: var(--mb-ink);
+  font-size: 0.95rem;
+}
+
+.mb-btn {
+  display: inline-block;
+  border: 1px solid var(--mb-line);
+  background: #fff;
+  color: var(--mb-ink);
+  padding: 10px 20px;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 0.95rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.mb-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.mb-btn--primary {
+  background: var(--mb-navy);
+  border-color: var(--mb-navy);
+  color: #fff;
+}
+
+.mb-btn--primary:hover:not(:disabled) {
+  background: #0f2b4a;
+}
+
+.mb-btn--ghost {
+  color: var(--mb-muted);
+}
+
+.mb-btn--ghost:hover:not(:disabled) {
+  color: #9b2c2c;
+  border-color: #e6c4c2;
+}
+
+.mb-btn--danger {
+  background: #9b2c2c;
+  border-color: #9b2c2c;
+  color: #fff;
+}
+
+.mb-empty {
+  padding: 48px 0;
+}
+
+@media (max-width: 720px) {
+  .mb-page {
+    padding: 36px 16px 72px;
+  }
+
+  .mb-card {
+    padding: 20px;
+  }
+
+  .mb-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .mb-amounts {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mb-page {
+  text-align: left;
+}

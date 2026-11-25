@@ -13,7 +13,9 @@ let csrf = { token: "", at: 0 };
 async function getCsrfToken() {
   if (csrf.token && Date.now() - csrf.at < 50 * 60 * 1000) return csrf.token;
   try {
-    const res = await fetch(`${API_URL}/csrf-token`, { credentials: "include" });
+    const res = await fetch(`${API_URL}/csrf-token`, {
+      credentials: "include",
+    });
     const data = await res.json();
     csrf = { token: data.csrfToken || "", at: Date.now() };
   } catch {
@@ -55,7 +57,10 @@ async function request(path, { method = "GET", body } = {}) {
         : res.status === 409
           ? "conflict"
           : "error";
-  throw apiError(data.message || "Something went wrong. Please try again.", code);
+  throw apiError(
+    data.message || "Something went wrong. Please try again.",
+    code,
+  );
 }
 
 // Uses the existing GET /bookings/availability?checkIn=YYYY-MM-DD route.
@@ -111,12 +116,31 @@ export async function addPoolAccess(bookingId) {
 }
 
 // Starts a GCash / Maya payment. paymentMethod is "GCash" or "Maya".
-export async function createPayment({ bookingId, paymentMethod }) {
+export async function createPayment({
+  bookingId,
+  paymentMethod,
+  paymentPurpose = "downpayment",
+}) {
   return request("/payments", {
     method: "POST",
-    body: { bookingId, paymentMethod, paymentPurpose: "downpayment" },
+    body: { bookingId, paymentMethod, paymentPurpose },
   });
 }
 
 export const getPaymentStatus = (paymentIntentId) =>
   request(`/payments/${encodeURIComponent(paymentIntentId)}`);
+
+export async function getMyBookings() {
+  const data = await request("/bookings/my-bookings");
+  return data.bookings || [];
+}
+
+export async function cancelBooking(bookingId) {
+  const data = await request(
+    `/bookings/${encodeURIComponent(bookingId)}/cancel`,
+    {
+      method: "PATCH",
+    },
+  );
+  return data.booking;
+}
