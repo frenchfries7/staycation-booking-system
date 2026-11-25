@@ -5,6 +5,7 @@ import { randomBytes } from "crypto";
 import sendEmail from "../utils/emailService.js";
 import bookingCancellationEmail from "../utils/bookingCancellationEmail.js";
 import bookingConfirmationEmail from "../utils/bookingConfirmationEmail.js";
+import BlockedDate from "../models/blockedDate.js";
 
 // Create booking
 export const createBooking = async (req, res) => {
@@ -101,6 +102,16 @@ export const createBooking = async (req, res) => {
     const totalAmount = accommodation.price;
     const downpaymentAmount = totalAmount * 0.5;
     const remainingBalance = totalAmount - downpaymentAmount;
+    const blockedDate = await BlockedDate.findOne({
+      startDate: { $lt: checkOutDate },
+      endDate: { $gte: checkInDate },
+    });
+
+    if (blockedDate) {
+      return res.status(409).json({
+        message: "These dates are unavailable due to property maintenance.",
+      });
+    }
 
     // Create pending booking with 15-minute expiration
     const booking = await Booking.create({
@@ -254,6 +265,22 @@ export const checkAvailability = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Check-in date cannot be in the past.",
+      });
+    }
+
+    // Fixed check-out: 12 PM the following day
+    const checkOutDate = new Date(checkInDate.getTime() + 22 * 60 * 60 * 1000);
+
+    const blockedDate = await BlockedDate.findOne({
+      startDate: { $lt: checkOutDate },
+      endDate: { $gte: checkInDate },
+    });
+
+    if (blockedDate) {
+      return res.status(200).json({
+        success: true,
+        available: false,
+        message: "This date is unavailable due to property maintenance.",
       });
     }
 
