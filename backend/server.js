@@ -18,6 +18,7 @@ import accommodationRoutes from "./routes/accommodationRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import initializeDoorAccess from "./utils/initializeDoorAccess.js";
 import doorAccessRoutes from "./routes/doorAccessRoutes.js";
+import blockedDateRoutes from "./routes/blockedDateRoutes.js";
 
 const app = express();
 
@@ -67,6 +68,7 @@ app.use("/api/bookings", csrfMiddleware, bookingRoutes);
 app.use("/api/accommodation", accommodationRoutes);
 app.use("/api/payments", csrfMiddleware, paymentRoutes);
 app.use("/api/door-access", doorAccessRoutes);
+app.use("/api/blocked-dates", blockedDateRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({
