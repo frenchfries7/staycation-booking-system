@@ -744,3 +744,119 @@
     transition: none;
   }
 }
+
+/* ---------- Price tag on the main photo (small, so it barely covers the image) ---------- */
+.unit__price-tag {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 4px 4px 11px;
+  background: rgba(250, 249, 245, 0.94);
+  border: 1px solid var(--u-line);
+  border-radius: 999px;
+  color: var(--u-navy);
+  text-decoration: none;
+  line-height: 1;
+}
+.unit__price-tag-amount {
+  font-family: "DM Serif Display", Georgia, serif;
+  font-size: 1.05rem;
+}
+.unit__price-tag-unit {
+  font-size: 0.68rem;
+  color: var(--u-muted);
+}
+.unit__price-tag-go {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--u-navy);
+  color: #faf9f5;
+  transition: transform 0.2s ease;
+}
+.unit__price-tag:hover .unit__price-tag-go {
+  transform: translateX(2px);
+}
+.unit__price-tag:focus-visible {
+  outline: 2px solid var(--u-navy);
+  outline-offset: 2px;
+}
+
+/* ---------- Stay facts pills ---------- */
+.unit__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.unit__fact {
+  padding: 6px 12px;
+  background: #f1eee8;
+  border-radius: 999px;
+  color: var(--u-navy);
+  font-size: 0.78rem;
+}
+
+/* ---------- Sticky price bar (hidden on desktop) ---------- */
+.unit__bar {
+  display: none;
+}
+.unit__bar-from {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--u-muted);
+}
+.unit__bar-price {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--u-muted);
+}
+.unit__bar-price strong {
+  font-family: "DM Serif Display", Georgia, serif;
+  font-weight: 400;
+  font-size: 1.3rem;
+  color: var(--u-navy);
+}
+.unit__bar-btn {
+  padding: 10px 20px;
+  background: var(--u-navy);
+  border-radius: 12px;
+  color: #faf9f5;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+@media (max-width: 991.98px) {
+  .unit__price-tag {
+    left: 8px;
+    bottom: 8px;
+    padding: 5px 11px;
+  }
+  .unit__price-tag-go {
+    display: none;
+  }
+
+  .unit__bar {
+    display: flex;
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 -1.25rem;
+    padding: 10px 1.25rem;
+    background: #fff;
+    border-top: 1px solid var(--u-line);
+  }
+}
