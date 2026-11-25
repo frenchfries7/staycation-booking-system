@@ -61,25 +61,21 @@
 }
 
 .login-logo {
-  width: 58px;
-  height: 58px;
-  margin: 0 auto 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 16px;
-  background: #172554;
-  color: white;
-  font-size: 30px;
-  font-weight: 700;
+  width: 88px;
+  height: 88px;
+  margin: 0 auto 10px;
+  display: block;
+  object-fit: contain;
+  border-radius: 50%;
+  background: transparent;
 }
 
 .login-brand {
-  color: #64748b;
-  font-size: 11px;
+  color: #172554;
+  font-size: 14px;
   font-weight: 700;
-  letter-spacing: 3px;
-  margin: 0 0 22px;
+  letter-spacing: 1px;
+  margin: 0 0 20px;
 }
 
 .login-content h2 {
@@ -97,51 +93,20 @@
   margin: 0 0 26px;
 }
 
-/* Google button */
-
-.google-login-button {
-  width: 100%;
-  min-height: 50px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 12px;
-  border: 1px solid #dbe1e8;
-  border-radius: 10px;
-  background: white;
-  color: #273449;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-
-.google-login-button:hover {
-  background: #f8fafc;
-  border-color: #94a3b8;
-}
-
-.google-icon {
-  font-size: 19px;
-  font-weight: 700;
-  color: #4285f4;
-}
-
-/* Email / password form (styled without changing the markup) */
+/* Email / password form */
 
 .login-content form {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin-top: 4px;
   text-align: left;
 }
 
-/* Small "or" separator drawn with CSS only */
-.login-content form::before {
+/* Small "or" separator placed below the Sign In button */
+.login-content form::after {
   content: "or";
   display: block;
-  margin: 18px 0 2px;
+  margin: 2px 0 16px;
   color: #94a3b8;
   font-size: 12px;
   line-height: 1;
@@ -238,6 +203,42 @@
   cursor: not-allowed;
 }
 
+/* Google button (below form) */
+
+.google-login-button {
+  width: 100%;
+  min-height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  color: #5f6368;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.google-login-button:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.1);
+}
+
+.google-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Footer */
 
 .login-divider {
@@ -324,15 +325,12 @@
   }
 
   .login-logo {
-    width: 50px;
-    height: 50px;
-    font-size: 26px;
-    border-radius: 14px;
+    width: 74px;
+    height: 74px;
   }
 
   .login-brand {
     margin-bottom: 16px;
-    letter-spacing: 2.5px;
   }
 
   .login-content h2 {
@@ -357,9 +355,8 @@
   }
 
   .login-logo {
-    width: 48px;
-    height: 48px;
-    font-size: 24px;
+    width: 72px;
+    height: 72px;
   }
 
   .login-brand {
