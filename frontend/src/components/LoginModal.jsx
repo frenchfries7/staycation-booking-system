@@ -3,11 +3,12 @@ import "./LoginModal.css";
 import { useState } from "react";
 
 function LoginModal({ isOpen, onClose }) {
-  if (!isOpen) return null;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  if (!isOpen) return null;
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -52,6 +53,7 @@ function LoginModal({ isOpen, onClose }) {
       setLoading(false);
     }
   };
+
   return (
     <div className="login-overlay" onClick={onClose}>
       <div
@@ -71,17 +73,18 @@ function LoginModal({ isOpen, onClose }) {
         </button>
 
         <div className="login-content">
-          <div className="login-logo">S</div>
+          <img
+            src="/images/unit/logo.png"
+            alt="B&R Hideaway logo"
+            className="login-logo"
+          />
 
-          <p className="login-brand">STAYCATION</p>
-
-          <h2 id="login-title">Welcome back!</h2>
+          <p className="login-brand">B&amp;R Hideaway</p>
 
           <p className="login-description">
             Sign in to your account and start planning your perfect stay.
           </p>
 
-          <GoogleLoginButton />
           <form onSubmit={handleLogin}>
             <div className="login-form-group">
               <label htmlFor="login-email">Email</label>
@@ -115,6 +118,8 @@ function LoginModal({ isOpen, onClose }) {
               {loading ? "Signing in..." : "Sign In"}
             </button>
           </form>
+
+          <GoogleLoginButton />
 
           <div className="login-divider">
             <span>SECURE SIGN IN</span>
