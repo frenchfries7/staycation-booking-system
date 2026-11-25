@@ -4,8 +4,10 @@ import {
   login,
   getMe,
   logout,
+  updateInformation,
 } from "../controllers/authController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
+import adminMiddleware from "../middleware/adminMiddleware.js";
 import { authLimiter } from "../middleware/rateLimitMiddleware.js";
 import csrfMiddleware from "../middleware/csrfMiddleware.js";
 
@@ -18,5 +20,7 @@ router.post("/login", authLimiter, login);
 router.get("/me", authMiddleware, getMe);
 
 router.post("/logout", csrfMiddleware, logout);
+
+router.put("/:id", authMiddleware, adminMiddleware, updateInformation);
 
 export default router;
