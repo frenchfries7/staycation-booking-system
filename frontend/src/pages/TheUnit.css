@@ -10,7 +10,12 @@
   --u-area: #b9bfc7;
 
   background: var(--u-bg);
-  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
   padding: 3rem 1.25rem 0;
   text-align: left;
 }
@@ -380,5 +385,371 @@
   }
   .unit__area-item {
     transform: none !important;
+  }
+}
+@import url("https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap");
+
+.unit {
+  --u-bg: #faf9f5;
+  --u-navy: #1f2547;
+  --u-muted: #5a7391;
+  --u-text: #6b7080;
+  --u-line: #e6e4dc;
+  --u-placeholder: #e3e1da;
+
+  background: var(--u-bg);
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+  padding: 3rem 1.25rem 0;
+  text-align: left;
+}
+
+.unit__inner {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+/* Intro */
+.unit__eyebrow {
+  margin: 0 0 0.6rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--u-muted);
+}
+.unit__title {
+  margin: 0 0 0.5rem;
+  font-family: "DM Serif Display", Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(2rem, 4vw, 2.6rem);
+  color: var(--u-navy);
+}
+.unit__subtitle {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--u-muted);
+}
+
+/* Gallery */
+.unit__gallery {
+  display: grid;
+  grid-template-columns: minmax(0, 470fr) minmax(0, 360fr) minmax(0, 225fr);
+  grid-template-rows: minmax(0, 1fr);
+  gap: 26px;
+  height: clamp(250px, 29vw, 316px);
+  margin-top: 3rem;
+}
+
+.unit__main,
+.unit__tile {
+  position: relative;
+  background: var(--u-placeholder);
+  overflow: hidden;
+  min-height: 0;
+}
+
+.unit__main img,
+.unit__tile img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.unit__main {
+  border-radius: 14px;
+}
+.unit__main img {
+  animation: unitFade 0.35s ease;
+}
+@keyframes unitFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.unit__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 24px 26px;
+  min-height: 0;
+}
+.unit__tile {
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  cursor: pointer;
+  outline: 2px solid transparent;
+  outline-offset: 3px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 0.15s ease,
+    outline-color 0.25s ease;
+}
+.unit__tile img {
+  animation: unitFade 0.35s ease;
+}
+.unit__tile:hover {
+  transform: translateY(-2px);
+}
+.unit__tile.is-showing {
+  outline-color: var(--u-navy);
+}
+@media (hover: none) {
+  .unit__tile:hover {
+    transform: none;
+  }
+}
+
+/* ---------- iOS Wheel Picker Style (CSS-only) ---------- */
+.unit__areas {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  overflow: hidden;
+  user-select: none;
+
+  /* Smooth fade sa taas at baba kagaya ng iOS picker (Pics 3 & 4) */
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.3) 14%,
+    #000 34%,
+    #000 66%,
+    rgba(0, 0, 0, 0.3) 86%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.3) 14%,
+    #000 34%,
+    #000 66%,
+    rgba(0, 0, 0, 0.3) 86%,
+    transparent 100%
+  );
+}
+
+/* Dalawang manipis na horizontal lines sa gitna */
+.unit__areas::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 46px;
+  transform: translateY(-50%);
+  border-top: 1px solid #d9dce2;
+  border-bottom: 1px solid #d9dce2;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Edge hover zones nasa loob ng faded top/bottom para gumana kahit naka-overflow: hidden */
+.unit__edge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 26px;
+  z-index: 3;
+}
+.unit__edge--up {
+  top: 0;
+}
+.unit__edge--down {
+  bottom: 0;
+}
+
+/* Smooth wheel slide para sa existing inline translateY ng TheUnit.jsx */
+.unit__area-item {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Clean text choices (walang solid box na mag-o-overlap) */
+.unit__area {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.75rem;
+  border: 0;
+  background: transparent;
+  color: #7c8594;
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 400;
+  text-align: center;
+  opacity: 0.55;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.25s ease,
+    color 0.2s ease;
+}
+
+/* Itago ang thumbnail para pure iOS picker text kagaya ng Pics 3 & 4 */
+.unit__area-thumb {
+  display: none;
+}
+
+.unit__area-label {
+  min-width: 0;
+  line-height: 1.2;
+}
+
+/* Active o naka-hover na choice */
+.unit__area:hover,
+.unit__area:focus-visible,
+.unit__area.is-active {
+  background: transparent;
+  color: var(--u-navy);
+  font-weight: 600;
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+/* Kapag nagho-hover sa ibang choice, i-dim muna ang dating active para isa lang ang naka-highlight */
+.unit__areas:has(.unit__area:hover) .unit__area.is-active:not(:hover) {
+  color: #7c8594;
+  font-weight: 400;
+  opacity: 0.55;
+  transform: scale(1);
+}
+
+/* Details */
+.unit__heading {
+  margin: 2.5rem 0 0.6rem;
+  font-family: "DM Serif Display", Georgia, serif;
+  font-weight: 400;
+  font-size: 1.65rem;
+  color: var(--u-navy);
+}
+.unit__meta {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--u-muted);
+}
+.unit__divider {
+  margin: 1.5rem 0;
+  border: 0;
+  border-top: 1px solid var(--u-line);
+  opacity: 1;
+}
+.unit__divider--end {
+  margin-bottom: 0;
+}
+
+.unit__highlights {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+.unit__highlight {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  color: var(--u-navy);
+}
+.unit__highlight-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.unit__highlight-text {
+  margin: 0.2rem 0 0;
+  font-size: 0.75rem;
+  color: var(--u-muted);
+}
+
+.unit .unit__heading + .unit__about,
+.unit__about {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--u-text);
+}
+
+/* Tablet & mobile */
+@media (max-width: 991.98px) {
+  .unit__gallery {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+    height: auto;
+    gap: 16px;
+    margin-top: 2rem;
+  }
+  .unit__main {
+    aspect-ratio: 16 / 10;
+  }
+  .unit__grid {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: auto;
+    gap: 12px;
+  }
+  .unit__tile {
+    aspect-ratio: 1;
+  }
+  .unit__areas {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    overflow: visible;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .unit__areas::before,
+  .unit__edge {
+    display: none;
+  }
+  .unit__area-item {
+    transform: none !important;
+  }
+  .unit__area {
+    min-height: 44px;
+    border-radius: 10px;
+    background: #eef0f4;
+    color: var(--u-navy);
+    font-size: 0.85rem;
+    opacity: 1;
+    transform: none !important;
+  }
+  .unit__area.is-active {
+    background: var(--u-navy);
+    color: #fff;
+  }
+  .unit__highlights {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .unit__tile img,
+  .unit__main img {
+    animation: none;
+  }
+  .unit__tile,
+  .unit__area-item,
+  .unit__area {
+    transition: none;
   }
 }
