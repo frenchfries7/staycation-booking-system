@@ -387,7 +387,6 @@
     transform: none !important;
   }
 }
-@import url("https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&display=swap");
 
 .unit {
   --u-bg: #faf9f5;
@@ -544,14 +543,15 @@
   );
 }
 
-/* Dalawang manipis na horizontal lines sa gitna */
+/* Two thin lines, fixed in the middle. The options move; the lines never do. */
 .unit__areas::before {
   content: "";
   position: absolute;
   left: 0;
   right: 0;
+  /* same height as one option row = (total height - 5 gaps of 8px) / 6 */
+  height: calc((100% - 40px) / 6);
   top: 50%;
-  height: 46px;
   transform: translateY(-50%);
   border-top: 1px solid #d9dce2;
   border-bottom: 1px solid #d9dce2;
@@ -579,7 +579,7 @@
   flex: 1;
   min-height: 0;
   display: flex;
-  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Clean text choices (walang solid box na mag-o-overlap) */
@@ -618,8 +618,7 @@
   line-height: 1.2;
 }
 
-/* Active o naka-hover na choice */
-.unit__area:hover,
+/* The choice inside the lines */
 .unit__area:focus-visible,
 .unit__area.is-active {
   background: transparent;
@@ -627,14 +626,6 @@
   font-weight: 600;
   opacity: 1;
   transform: scale(1.08);
-}
-
-/* Kapag nagho-hover sa ibang choice, i-dim muna ang dating active para isa lang ang naka-highlight */
-.unit__areas:has(.unit__area:hover) .unit__area.is-active:not(:hover) {
-  color: #7c8594;
-  font-weight: 400;
-  opacity: 0.55;
-  transform: scale(1);
 }
 
 /* Details */

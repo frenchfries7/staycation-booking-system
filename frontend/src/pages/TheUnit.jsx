@@ -60,7 +60,13 @@ const HIGHLIGHTS = [
 ];
 
 const EXTENSIONS = ["jpg", "png", "jpeg", "webp"];
-const ROTATE_MS = 1100; // time between steps while the cursor stays on an edge zone
+// The option sitting inside the two lines is always the one being previewed.
+// Slot 2 is the third of 6 rows, which is exactly where the lines are (see CSS).
+const CENTER_SLOT = 2;
+const ROTATE_MS = 700; // time between steps while the cursor stays on the top / bottom edge
+const AUTO_MS = 6000; // how long each option stays inside the lines
+const SLIDE_MS = 400; // matches the slide transition in the CSS
+const CLICK_STEP_MS = 200; // speed of the slide when you click an option
 
 // Remembers which extension worked for each photo, so re-rendering
 // a photo doesn't probe the other extensions again.
@@ -97,17 +103,28 @@ function Photo({ base, alt, className }) {
 }
 
 export default function TheUnit() {
-  const [areaIndex, setAreaIndex] = useState(0);
-  // area button being hovered / focused (preview only, not selected)
-  const [hoverArea, setHoverArea] = useState(null);
-
-  // visual order of the area buttons, and which edge the cursor is on
-  const [order, setOrder] = useState(AREAS.map((_, i) => i));
+  // visual order of the area buttons (Living room starts inside the lines).
+  // "wrapped" is the button that just jumped from one end to the other,
+  // it skips its slide so it doesn't fly across the other options.
+  const [wheel, setWheel] = useState({
+    order: [4, 5, 0, 1, 2, 3],
+    wrapped: null,
+  });
+  const { order, wrapped } = wheel;
+  const [target, setTarget] = useState(null); // option clicked, wheel is sliding to it
+  const [paused, setPaused] = useState(false); // cursor is on the options
   const [edge, setEdge] = useState(null); // "up" | "down" | null
   // small photo currently shown in the big image: { area, src } | null
   const [featured, setFeatured] = useState(null);
 
-  const shownIndex = hoverArea ?? areaIndex;
+  // whichever option has landed inside the lines is the one shown in the previews
+  // (it updates just after the slide finishes)
+  const centerIndex = target ?? order[CENTER_SLOT];
+  const [shownIndex, setShownIndex] = useState(centerIndex);
+  useEffect(() => {
+    const id = setTimeout(() => setShownIndex(centerIndex), SLIDE_MS * 0.8);
+    return () => clearTimeout(id);
+  }, [centerIndex]);
   const viewArea = AREAS[shownIndex];
 
   // The big image shows the hovered small photo and goes back when the cursor leaves it
@@ -133,21 +150,52 @@ export default function TheUnit() {
   const mainSrc =
     featured && featured.area === shownIndex ? featured.src : viewArea.main;
 
-  // Cursor at the top edge: list rotates up (first button goes to the bottom).
-  // Cursor at the bottom edge: list rotates down (last button goes to the top).
+  // one step of the wheel: "up" brings the next option into the lines
+  const step = (dir) =>
+    setWheel(({ order: o }) =>
+      dir === "up"
+        ? { order: [...o.slice(1), o[0]], wrapped: o[0] }
+        : {
+            order: [o[o.length - 1], ...o.slice(0, -1)],
+            wrapped: o[o.length - 1],
+          },
+    );
+
+  // clicking / tapping an option slides the wheel to it
+  const rotateTo = (i) => setTarget(i);
+
+  useEffect(() => {
+    if (target === null) return;
+    const up =
+      (((order.indexOf(target) - CENTER_SLOT) % order.length) + order.length) %
+      order.length;
+    if (up === 0) {
+      setTarget(null);
+      return;
+    }
+    const id = setTimeout(
+      () => step(up <= order.length / 2 ? "up" : "down"),
+      CLICK_STEP_MS,
+    );
+    return () => clearTimeout(id);
+  }, [target, order]);
+
+  // Cursor at the top edge: options move up. Cursor at the bottom edge: options move down.
   useEffect(() => {
     if (!edge) return;
-    setHoverArea(null);
-    const step = () =>
-      setOrder((o) =>
-        edge === "up"
-          ? [...o.slice(1), o[0]]
-          : [o[o.length - 1], ...o.slice(0, -1)],
-      );
-    step();
-    const id = setInterval(step, ROTATE_MS);
+    setTarget(null);
+    step(edge);
+    const id = setInterval(() => step(edge), ROTATE_MS);
     return () => clearInterval(id);
   }, [edge]);
+
+  // The options turn on their own, slowly. They wait while the cursor is on
+  // the options or while a small photo is being previewed.
+  useEffect(() => {
+    if (paused || featured || target !== null) return;
+    const id = setTimeout(() => step("up"), AUTO_MS);
+    return () => clearTimeout(id);
+  }, [order, paused, featured, target]);
 
   useEffect(() => {
     AREAS.forEach((a) => [a.main, ...a.images].forEach(preload));
@@ -190,17 +238,18 @@ export default function TheUnit() {
             ))}
           </div>
 
-          {/* Area buttons: cursor on the top / bottom edge rotates the list */}
+          {/* Area buttons: the list turns by itself or from the top / bottom edge, the option inside the lines is previewed */}
           <div
             className="unit__areas"
             role="group"
             aria-label="Browse by area"
+            onMouseEnter={() => setPaused(true)}
             onMouseLeave={() => {
+              setPaused(false);
               setEdge(null);
-              setHoverArea(null);
             }}
           >
-            {/* Hover just above the first / below the last button to rotate the list */}
+            {/* Hover just above the first / below the last option to move the list */}
             <div
               className="unit__edge unit__edge--up"
               aria-hidden="true"
@@ -221,19 +270,15 @@ export default function TheUnit() {
                 key={a.slug}
                 className="unit__area-item"
                 style={{
-                  transform: `translateY(calc(${order.indexOf(i) - i} * (100% + 8px)))`,
+                  transform: `translateY(calc((${order.indexOf(i) - i} + 0.5) * (100% + 8px)))`,
+                  transition: wrapped === i ? "none" : undefined,
                 }}
-                onPointerEnter={(e) =>
-                  e.pointerType === "mouse" && setHoverArea(i)
-                }
               >
                 <button
                   type="button"
-                  className={`unit__area ${i === areaIndex ? "is-active" : ""}`}
-                  onFocus={() => setHoverArea(i)}
-                  onBlur={() => setHoverArea(null)}
-                  onClick={() => setAreaIndex(i)}
-                  aria-pressed={i === areaIndex}
+                  className={`unit__area ${i === shownIndex ? "is-active" : ""}`}
+                  onClick={() => rotateTo(i)}
+                  aria-pressed={i === shownIndex}
                 >
                   <span className="unit__area-thumb">
                     <Photo base={a.main} alt="" />
