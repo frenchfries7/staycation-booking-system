@@ -45,6 +45,122 @@ const secondsLeft = (expiresAt) =>
     ? Math.max(0, Math.floor((new Date(expiresAt) - Date.now()) / 1000))
     : 0;
 
+// DESIGN: date helpers for the bento tiles (display only)
+const parseKey = (key) => {
+  const d = new Date(`${key}T00:00:00`);
+  return Number.isNaN(d.getTime()) ? null : d;
+};
+
+const monthDay = (d) =>
+  d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+// "Nov 28 – 29" + "2026"
+function stayRange(inKey, outKey) {
+  const a = parseKey(inKey);
+  const b = parseKey(outKey);
+  if (!a || !b) return { main: formatLong(inKey), year: "" };
+
+  const sameMonth =
+    a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear();
+  const main = sameMonth
+    ? `${monthDay(a)} – ${b.getDate()}`
+    : `${monthDay(a)} – ${monthDay(b)}`;
+  const year =
+    a.getFullYear() === b.getFullYear()
+      ? `${a.getFullYear()}`
+      : `${a.getFullYear()} – ${b.getFullYear()}`;
+  return { main, year };
+}
+
+// "Sat, Nov 28"
+function shortDay(key) {
+  const d = parseKey(key);
+  return d
+    ? d.toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+      })
+    : formatLong(key);
+}
+
+// DESIGN: small icons for the tiles
+function TileIcon({ children }) {
+  return (
+    <span className="mb-tile-icon" aria-hidden="true">
+      <svg
+        width="17"
+        height="17"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        {children}
+      </svg>
+    </span>
+  );
+}
+
+const LoginIcon = () => (
+  <TileIcon>
+    <path d="M14 4h4a2 2 0 012 2v12a2 2 0 01-2 2h-4" />
+    <path d="M4 12h10M10 8l4 4-4 4" />
+  </TileIcon>
+);
+
+const LogoutIcon = () => (
+  <TileIcon>
+    <path d="M10 4H6a2 2 0 00-2 2v12a2 2 0 002 2h4" />
+    <path d="M10 12h10M16 8l4 4-4 4" />
+  </TileIcon>
+);
+
+function UsersIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="9" cy="8" r="3.2" />
+      <path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" />
+      <path d="M16 4.5a3.2 3.2 0 010 6.2M18 14.3c1.7.8 3 2.7 3 5.7" />
+    </svg>
+  );
+}
+
+// DESIGN: new back button (UI only)
+function BackLink() {
+  return (
+    <Link to="/" className="mb-back">
+      <span className="mb-back-icon" aria-hidden="true">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M15 5l-7 7 7 7" />
+        </svg>
+      </span>
+      Back to home
+    </Link>
+  );
+}
+
 function HoldTimer({ expiresAt, onExpire }) {
   const [left, setLeft] = useState(() => secondsLeft(expiresAt));
 
@@ -81,53 +197,131 @@ function BookingCard({ booking, busyId, onCancel, onPay, onExpire }) {
 
   const checkOutKey = addDays(booking.checkInDateKey, 1);
 
+  // DESIGN: display values for the bento tiles
+  const range = stayRange(booking.checkInDateKey, checkOutKey);
+  const rangeText = range.year ? `${range.main}, ${range.year}` : range.main;
+  const guests = Number(booking.numberOfGuests);
+  const guestsText = `${booking.numberOfGuests} ${guests === 1 ? "guest" : "guests"}`;
+  const statusLabel =
+    BOOKING_LABELS[booking.bookingStatus] || booking.bookingStatus;
+
+  const total = Number(booking.totalAmount) || 0;
+  const paid =
+    booking.paymentStatus === "fully_paid"
+      ? total
+      : booking.paymentStatus === "partial"
+        ? Number(booking.downpaymentAmount) || 0
+        : 0;
+  const percent =
+    total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 0;
+
+  const isPaid = booking.paymentStatus === "fully_paid";
+  const payLabel = canPayDown
+    ? "Downpayment due"
+    : canPayBalance
+      ? "Balance due"
+      : isPaid
+        ? "Fully paid"
+        : PAYMENT_LABELS[booking.paymentStatus] || booking.paymentStatus;
+  const payAmount = canPayDown
+    ? peso(booking.downpaymentAmount)
+    : canPayBalance
+      ? peso(booking.remainingBalance)
+      : peso(booking.totalAmount);
+  const payPurpose = canPayDown ? "downpayment" : "balance";
+
+  // DESIGN: cancelled / expired stay compact (header only)
+  if (["cancelled", "expired"].includes(booking.bookingStatus)) {
+    return (
+      <article className={`mb-card mb-card--${booking.bookingStatus}`}>
+        <header className="mb-card-head">
+          <div>
+            <p className="mb-ref">{booking.bookingReference}</p>
+            <h2 className="mb-dates">{rangeText}</h2>
+          </div>
+          <span className={`mb-badge mb-badge--${booking.bookingStatus}`}>
+            {statusLabel}
+          </span>
+        </header>
+      </article>
+    );
+  }
+
   return (
-    <article className="mb-card">
-      <header className="mb-card-head">
-        <div>
-          <p className="mb-ref">{booking.bookingReference}</p>
-          <h2 className="mb-dates">{formatLong(booking.checkInDateKey)}</h2>
+    <article className={`mb-card mb-card--${booking.bookingStatus}`}>
+      {/* DESIGN: bento grid */}
+      <div className="mb-bento">
+        {/* Date tile */}
+        <div className="mb-tile mb-tile--date">
+          <div>
+            <span className={`mb-badge mb-badge--${booking.bookingStatus}`}>
+              {statusLabel}
+            </span>
+            <h2 className="mb-dates">{range.main}</h2>
+            <p className="mb-tile-sub">
+              {range.year ? `${range.year} · ` : ""}1 night
+            </p>
+          </div>
+          <div>
+            <p className="mb-guests">
+              <UsersIcon />
+              {guestsText}
+            </p>
+            <p className="mb-ref">{booking.bookingReference}</p>
+          </div>
         </div>
-        <span className={`mb-badge mb-badge--${booking.bookingStatus}`}>
-          {BOOKING_LABELS[booking.bookingStatus] || booking.bookingStatus}
-        </span>
-      </header>
 
-      <dl className="mb-grid">
-        <div>
-          <dt>Check-in</dt>
-          <dd>{CHECK_IN_LABEL}</dd>
+        {/* Check-in tile */}
+        <div className="mb-tile mb-tile--info">
+          <LoginIcon />
+          <span className="mb-tile-label">Check-in</span>
+          <strong className="mb-tile-value">
+            {shortDay(booking.checkInDateKey)}
+          </strong>
+          <span className="mb-tile-sub">{CHECK_IN_LABEL}</span>
         </div>
-        <div>
-          <dt>Check-out</dt>
-          <dd>
-            {formatLong(checkOutKey)}, {CHECK_OUT_LABEL}
-          </dd>
-        </div>
-        <div>
-          <dt>Guests</dt>
-          <dd>{booking.numberOfGuests}</dd>
-        </div>
-        <div>
-          <dt>Payment</dt>
-          <dd>
-            {PAYMENT_LABELS[booking.paymentStatus] || booking.paymentStatus}
-          </dd>
-        </div>
-      </dl>
 
-      <div className="mb-amounts">
-        <div>
-          <span>Total</span>
-          <strong>{peso(booking.totalAmount)}</strong>
+        {/* Check-out tile */}
+        <div className="mb-tile mb-tile--info">
+          <LogoutIcon />
+          <span className="mb-tile-label">Check-out</span>
+          <strong className="mb-tile-value">{shortDay(checkOutKey)}</strong>
+          <span className="mb-tile-sub">{CHECK_OUT_LABEL}</span>
         </div>
-        <div>
-          <span>Downpayment</span>
-          <strong>{peso(booking.downpaymentAmount)}</strong>
-        </div>
-        <div>
-          <span>Balance</span>
-          <strong>{peso(booking.remainingBalance)}</strong>
+
+        {/* Payment tile */}
+        <div className={`mb-tile mb-tile--pay${isPaid ? " is-paid" : ""}`}>
+          <div className="mb-paytile-main">
+            <span className="mb-tile-label">{payLabel}</span>
+            <strong className="mb-paytile-amount">{payAmount}</strong>
+            <div className="mb-progress" aria-hidden="true">
+              <span style={{ width: `${percent}%` }} />
+            </div>
+            <span className="mb-paytile-note">
+              {peso(paid)} paid of {peso(total)}
+            </span>
+          </div>
+
+          {(canPayDown || canPayBalance) && (
+            <div className="mb-paytile-btns" role="group" aria-label="Pay with">
+              <button
+                type="button"
+                className="mb-paybtn"
+                disabled={busy}
+                onClick={() => onPay(booking, "GCash", payPurpose)}
+              >
+                GCash
+              </button>
+              <button
+                type="button"
+                className="mb-paybtn"
+                disabled={busy}
+                onClick={() => onPay(booking, "Maya", payPurpose)}
+              >
+                Maya
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -135,73 +329,38 @@ function BookingCard({ booking, busyId, onCancel, onPay, onExpire }) {
         <HoldTimer expiresAt={booking.expiresAt} onExpire={onExpire} />
       )}
 
-      {(canPayDown || canPayBalance || canCancel) && (
+      {canCancel && (
         <footer className="mb-actions">
-          {(canPayDown || canPayBalance) && (
-            <div className="mb-pay">
-              <span className="mb-pay-label">
-                {canPayDown
-                  ? `Pay ${peso(booking.downpaymentAmount)} downpayment`
-                  : `Pay ${peso(booking.remainingBalance)} balance`}
-              </span>
+          {confirming ? (
+            <div className="mb-confirm">
+              <span>Cancel this booking?</span>
               <button
                 type="button"
-                className="mb-btn mb-btn--primary"
+                className="mb-btn mb-btn--danger"
                 disabled={busy}
-                onClick={() =>
-                  onPay(
-                    booking,
-                    "GCash",
-                    canPayDown ? "downpayment" : "balance",
-                  )
-                }
+                onClick={() => onCancel(booking._id)}
               >
-                GCash
+                Yes, cancel
               </button>
               <button
                 type="button"
-                className="mb-btn mb-btn--primary"
+                className="mb-btn"
                 disabled={busy}
-                onClick={() =>
-                  onPay(booking, "Maya", canPayDown ? "downpayment" : "balance")
-                }
+                onClick={() => setConfirming(false)}
               >
-                Maya
+                Keep it
               </button>
             </div>
+          ) : (
+            <button
+              type="button"
+              className="mb-btn mb-btn--ghost"
+              disabled={busy}
+              onClick={() => setConfirming(true)}
+            >
+              Cancel booking
+            </button>
           )}
-
-          {canCancel &&
-            (confirming ? (
-              <div className="mb-confirm">
-                <span>Cancel this booking?</span>
-                <button
-                  type="button"
-                  className="mb-btn mb-btn--danger"
-                  disabled={busy}
-                  onClick={() => onCancel(booking._id)}
-                >
-                  Yes, cancel
-                </button>
-                <button
-                  type="button"
-                  className="mb-btn"
-                  disabled={busy}
-                  onClick={() => setConfirming(false)}
-                >
-                  Keep it
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                className="mb-btn mb-btn--ghost"
-                disabled={busy}
-                onClick={() => setConfirming(true)}
-              >
-                Cancel booking
-              </button>
-            ))}
         </footer>
       )}
     </article>
@@ -314,6 +473,7 @@ export default function MyBookings() {
   return (
     <main className="mb-page">
       <div className="mb-wrap">
+        <BackLink />
         <p className="mb-eyebrow">Your reservations</p>
         <h1 className="mb-title">My bookings</h1>
 

@@ -1,54 +1,105 @@
-/* My Bookings - matches the B&R Hideaway theme (cream bg, navy, serif headings).
-   If your other pages use CSS variables (e.g. --navy, --font-serif), swap these tokens. */
+/* Same fonts as The unit page: Inter (body) + DM Serif Display (headings) */
+@import url("https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap");
+
+/* My Bookings - same scale and width as The unit page */
 .mb-page {
-  --mb-bg: #faf8f5;
+  --mb-bg: #faf9f5;
   --mb-card: #ffffff;
-  --mb-navy: #14365c;
-  --mb-ink: #1a1f3c;
-  --mb-muted: #5b7089;
-  --mb-line: #ebe7e0;
+  --mb-navy: #1f2547;
+  --mb-ink: #1f2547;
+  --mb-muted: #5a7391;
+  --mb-line: #e6e4dc;
   --mb-soft: #f1eee8;
   --mb-serif: "DM Serif Display", Georgia, serif;
+  --mb-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
 
   background: var(--mb-bg);
   color: var(--mb-ink);
+  font-family: var(--mb-sans);
   min-height: calc(100vh - 102px);
-  padding: 56px 24px 96px;
+  padding: 3rem 1.25rem 5rem;
+  text-align: left;
 }
 
+.mb-page *,
+.mb-page button,
+.mb-page a {
+  font-family: inherit;
+}
+
+/* Serif is only for the page title. Dates and numbers stay in Inter so they're easy to read. */
+.mb-page .mb-title {
+  font-family: var(--mb-serif);
+}
+
+/* Same max width as The unit page */
 .mb-wrap {
-  max-width: 1000px;
+  max-width: 1080px;
   margin: 0 auto;
 }
 
+/* Back button */
+.mb-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px 6px 8px;
+  background: var(--mb-card);
+  border: 1px solid var(--mb-line);
+  border-radius: 999px;
+  color: var(--mb-navy);
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.mb-back:hover {
+  border-color: var(--mb-navy);
+}
+
+.mb-back:focus-visible {
+  outline: 2px solid var(--mb-navy);
+  outline-offset: 2px;
+}
+
+.mb-back-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #e8eef6;
+}
+
 .mb-eyebrow {
-  margin: 0 0 12px;
+  margin: 2rem 0 0.6rem;
   color: var(--mb-muted);
-  font-size: 0.9rem;
-  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .mb-title {
-  margin: 0 0 28px;
-  font-family: var(--mb-serif);
-  font-size: clamp(2rem, 4vw, 2.75rem);
+  margin: 0 0 1.5rem;
+  font-size: clamp(2rem, 4vw, 2.6rem);
   font-weight: 400;
-  color: var(--mb-ink);
+  line-height: 1.1;
+  color: var(--mb-navy);
 }
 
 .mb-state {
   color: var(--mb-muted);
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   margin: 0 0 16px;
 }
 
 /* Filters */
 .mb-filters {
   display: inline-flex;
-  gap: 6px;
-  padding: 5px;
-  margin-bottom: 24px;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 22px;
   background: var(--mb-soft);
   border-radius: 999px;
 }
@@ -57,30 +108,32 @@
   border: 0;
   background: transparent;
   color: var(--mb-muted);
-  padding: 8px 18px;
+  padding: 7px 18px;
   border-radius: 999px;
   font: inherit;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   cursor: pointer;
 }
 
 .mb-filter.is-active {
   background: var(--mb-navy);
   color: #fff;
+  font-weight: 500;
 }
 
 .mb-filter:focus-visible,
-.mb-btn:focus-visible {
+.mb-btn:focus-visible,
+.mb-paybtn:focus-visible {
   outline: 2px solid var(--mb-navy);
   outline-offset: 2px;
 }
 
 /* Alerts */
 .mb-alert {
-  margin: 0 0 20px;
-  padding: 12px 16px;
-  border-radius: 12px;
-  font-size: 0.95rem;
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.85rem;
 }
 
 .mb-alert--error {
@@ -96,56 +149,36 @@
 /* List + cards */
 .mb-list {
   display: grid;
-  gap: 20px;
+  gap: 16px;
 }
 
 .mb-card {
   background: var(--mb-card);
   border: 1px solid var(--mb-line);
   border-radius: 20px;
-  padding: 28px;
-}
-
-.mb-card-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.mb-ref {
-  margin: 0 0 6px;
-  color: var(--mb-muted);
-  font-size: 0.9rem;
-  letter-spacing: 0.04em;
-}
-
-.mb-dates {
-  margin: 0;
-  font-family: var(--mb-serif);
-  font-size: 1.6rem;
-  font-weight: 400;
+  padding: 12px;
+  overflow: hidden;
 }
 
 /* Status badges */
 .mb-badge {
+  display: inline-block;
   flex-shrink: 0;
-  padding: 6px 14px;
+  padding: 4px 12px;
   border-radius: 999px;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 500;
   background: var(--mb-soft);
   color: var(--mb-muted);
 }
 
 .mb-badge--pending {
-  background: #fcf1dc;
-  color: #8a5a00;
+  background: #fdf0d8;
+  color: #8a5a0b;
 }
 
 .mb-badge--confirmed {
-  background: #e3ecf6;
+  background: #e4ecf8;
   color: var(--mb-navy);
 }
 
@@ -157,72 +190,235 @@
 .mb-badge--cancelled,
 .mb-badge--expired {
   background: var(--mb-soft);
-  color: #8a8a8a;
+  color: #8a8579;
 }
 
-/* Details */
-.mb-grid {
+/* ---------- Bento grid ---------- */
+.mb-bento {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin: 0 0 24px;
+  grid-template-columns: 1.25fr 1fr 1fr;
+  gap: 10px;
 }
 
-.mb-grid dt {
-  color: var(--mb-muted);
-  font-size: 0.85rem;
-  margin-bottom: 4px;
+.mb-tile {
+  border-radius: 14px;
+  padding: 16px;
+  min-width: 0;
 }
 
-.mb-grid dd {
-  margin: 0;
-  font-size: 1rem;
-}
-
-.mb-amounts {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-}
-
-.mb-amounts > div {
+/* Date tile (tall, left) */
+.mb-tile--date {
+  grid-row: span 2;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 14px 16px;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 190px;
   background: var(--mb-soft);
-  border-radius: 14px;
 }
 
-.mb-amounts span {
-  color: var(--mb-muted);
-  font-size: 0.85rem;
+.mb-tile--date .mb-dates {
+  margin: 14px 0 6px;
 }
 
-.mb-amounts strong {
-  font-size: 1.1rem;
+.mb-dates {
+  font-family: var(--mb-sans);
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
   color: var(--mb-navy);
 }
 
-.mb-hold {
-  margin: 20px 0 0;
-  color: #8a5a00;
-  font-size: 0.95rem;
+.mb-guests {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--mb-navy);
+  font-size: 0.8rem;
 }
 
-/* Actions */
+.mb-ref {
+  margin: 6px 0 0;
+  color: #8a93a1;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+}
+
+/* Check-in / check-out tiles */
+.mb-tile--info {
+  display: flex;
+  flex-direction: column;
+  background: var(--mb-card);
+  border: 1px solid var(--mb-line);
+}
+
+.mb-tile-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  margin-bottom: 10px;
+  border-radius: 9px;
+  background: #e4ecf8;
+  color: var(--mb-navy);
+}
+
+.mb-tile-label {
+  color: #7a8696;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.mb-tile-value {
+  margin-top: 2px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--mb-navy);
+}
+
+.mb-tile-sub {
+  margin: 0;
+  color: var(--mb-muted);
+  font-size: 0.8rem;
+}
+
+.mb-time {
+  display: block;
+  margin-top: 2px;
+  color: var(--mb-muted);
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+/* Payment tile (navy, bottom right) */
+.mb-tile--pay {
+  grid-column: span 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: var(--mb-navy);
+  color: #faf9f5;
+}
+
+.mb-tile--pay .mb-tile-label {
+  color: #9fb0c9;
+}
+
+.mb-paytile-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.mb-paytile-amount {
+  margin-top: 2px;
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+}
+
+.mb-progress {
+  width: 140px;
+  max-width: 100%;
+  height: 5px;
+  margin-top: 8px;
+  background: rgba(250, 249, 245, 0.18);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.mb-progress span {
+  display: block;
+  height: 100%;
+  background: #faf9f5;
+  border-radius: 999px;
+}
+
+.mb-paytile-note {
+  margin-top: 5px;
+  color: #9fb0c9;
+  font-size: 0.72rem;
+}
+
+.mb-paytile-btns {
+  display: grid;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.mb-paybtn {
+  min-width: 104px;
+  padding: 9px 22px;
+  border: 0;
+  border-radius: 10px;
+  background: #faf9f5;
+  color: var(--mb-navy);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.mb-paybtn:hover:not(:disabled) {
+  background: #fff;
+}
+
+.mb-paybtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Fully paid: calm green instead of navy */
+.mb-tile--pay.is-paid {
+  background: #e8f1ea;
+  color: #2f6b45;
+}
+
+.mb-tile--pay.is-paid .mb-tile-label,
+.mb-tile--pay.is-paid .mb-paytile-note {
+  color: #4f8a68;
+}
+
+.mb-tile--pay.is-paid .mb-paytile-amount {
+  color: #2f6b45;
+}
+
+.mb-tile--pay.is-paid .mb-progress {
+  background: rgba(47, 107, 69, 0.2);
+}
+
+.mb-tile--pay.is-paid .mb-progress span {
+  background: #2f6b45;
+}
+
+/* Hold timer */
+.mb-hold {
+  margin: 10px 4px 0;
+  padding: 10px 14px;
+  background: #fdf0d8;
+  border-radius: 10px;
+  color: #8a5a0b;
+  font-size: 0.85rem;
+}
+
+/* Cancel row: quiet, under the tiles */
 .mb-actions {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
-  gap: 16px;
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid var(--mb-line);
+  padding: 8px 6px 2px;
 }
 
-.mb-pay,
 .mb-confirm {
   display: flex;
   flex-wrap: wrap;
@@ -230,21 +426,23 @@
   gap: 10px;
 }
 
-.mb-pay-label,
 .mb-confirm span {
   color: var(--mb-ink);
-  font-size: 0.95rem;
+  font-size: 0.85rem;
+  margin-right: 4px;
 }
 
+/* Buttons (used by Cancel / confirm / login view) */
 .mb-btn {
   display: inline-block;
   border: 1px solid var(--mb-line);
   background: #fff;
   color: var(--mb-ink);
-  padding: 10px 20px;
-  border-radius: 12px;
+  padding: 8px 18px;
+  border-radius: 10px;
   font: inherit;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
+  font-weight: 500;
   text-decoration: none;
   cursor: pointer;
 }
@@ -261,16 +459,22 @@
 }
 
 .mb-btn--primary:hover:not(:disabled) {
-  background: #0f2b4a;
+  background: #161b38;
 }
 
+/* "Cancel booking" is a quiet text link */
 .mb-btn--ghost {
-  color: var(--mb-muted);
+  padding: 6px 8px;
+  border: 0;
+  background: transparent;
+  color: #7a8696;
+  font-size: 0.8rem;
+  font-weight: 400;
+  text-decoration: underline;
 }
 
 .mb-btn--ghost:hover:not(:disabled) {
   color: #9b2c2c;
-  border-color: #e6c4c2;
 }
 
 .mb-btn--danger {
@@ -279,28 +483,72 @@
   color: #fff;
 }
 
-.mb-empty {
-  padding: 48px 0;
+/* Cancelled / expired: compact and quiet (header only) */
+.mb-card--cancelled,
+.mb-card--expired {
+  padding: 18px 28px;
+  opacity: 0.85;
 }
 
+.mb-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.mb-card-head .mb-ref {
+  margin: 0 0 4px;
+  font-size: 0.75rem;
+}
+
+.mb-card-head .mb-dates {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #4a5262;
+}
+
+.mb-empty {
+  padding: 32px 0;
+}
+
+/* Mobile */
 @media (max-width: 720px) {
   .mb-page {
-    padding: 36px 16px 72px;
+    padding: 2rem 1rem 4rem;
   }
 
   .mb-card {
-    padding: 20px;
+    padding: 10px;
   }
 
-  .mb-grid {
+  .mb-card--cancelled,
+  .mb-card--expired {
+    padding: 16px;
+  }
+
+  /* Date on top, check-in and check-out side by side, payment at the bottom */
+  .mb-bento {
     grid-template-columns: 1fr 1fr;
   }
 
-  .mb-amounts {
-    grid-template-columns: 1fr;
+  .mb-tile--date {
+    grid-column: 1 / -1;
+    grid-row: auto;
+    min-height: 0;
   }
-}
 
-.mb-page {
-  text-align: left;
+  .mb-tile--pay {
+    grid-column: 1 / -1;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .mb-paytile-btns {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .mb-progress {
+    width: 100%;
+  }
 }
