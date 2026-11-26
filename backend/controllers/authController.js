@@ -13,9 +13,9 @@ const cookieOptions = {
 // REGISTER
 export const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-
-    if (!name || !email || !password) {
+    const { name, password } = req.body;
+    const normalizedEmail = req.body.email?.trim().toLowerCase();
+    if (!name || !normalizedEmail || !password) {
       return res.status(400).json({
         success: false,
         message: "Please fill in all fields.",
@@ -29,7 +29,7 @@ export const register = async (req, res) => {
       });
     }
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: normalizedEmail });
 
     if (existingUser) {
       return res.status(409).json({
@@ -42,7 +42,7 @@ export const register = async (req, res) => {
 
     const user = await User.create({
       name,
-      email,
+      email: normalizedEmail,
       password: hashedPassword,
     });
 

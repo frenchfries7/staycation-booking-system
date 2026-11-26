@@ -54,7 +54,9 @@ export const googleCallback = async (req, res) => {
 
     res.cookie("token", token, cookieOptions);
 
-    return res.redirect(`${process.env.FRONTEND_URL}/google-success`);
+    return res.redirect(
+      `${process.env.FRONTEND_URL}/google-success#token=${token}`,
+    );
   } catch (error) {
     console.error("Google authentication error:", error.message);
 

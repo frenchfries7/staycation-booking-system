@@ -105,12 +105,14 @@ export const handlePayMongoWebhook = async (req, res) => {
     const payment = await Payment.findOne({ paymentIntentId });
 
     if (!payment) {
-      console.error("Webhook payment record not found:", paymentIntentId);
+      console.error(
+        "Webhook payment record not found. PayMongo retry required:",
+        paymentIntentId,
+      );
 
-      // Acknowledge unknown payments to avoid endless retries.
-      return res.status(200).json({
-        success: true,
-        message: "Payment record not found. Event acknowledged.",
+      return res.status(503).json({
+        success: false,
+        message: "Payment record is not available yet. Please retry.",
       });
     }
 

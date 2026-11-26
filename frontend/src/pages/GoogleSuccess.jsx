@@ -8,6 +8,13 @@ function GoogleSuccess() {
 
   useEffect(() => {
     const verifyGoogleLogin = async () => {
+      const hash = window.location.hash;
+      if (hash.startsWith("#token=")) {
+        const token = hash.replace("#token=", "");
+        localStorage.setItem("token", token);
+        window.history.replaceState(null, "", window.location.pathname);
+      }
+
       const success = await checkAuth();
 
       if (success) {
