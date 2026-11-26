@@ -18,13 +18,18 @@ export const AuthProvider = ({ children }) => {
   // CHECK AUTHENTICATION
   const checkAuth = useCallback(async () => {
     try {
+      const token = localStorage.getItem("token");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
       const response = await fetch(`${API_URL}/auth/me`, {
         credentials: "include",
+        headers,
       });
 
       const data = await response.json();
 
       if (!response.ok) {
+        localStorage.removeItem("token");
         setUser(null);
         return false;
       }
@@ -41,20 +46,31 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // LOGIN
-  const login = useCallback(async () => {
-    return await checkAuth();
-  }, [checkAuth]);
+  const login = useCallback(
+    async (token) => {
+      if (token && typeof token === "string") {
+        localStorage.setItem("token", token);
+      }
+      return await checkAuth();
+    },
+    [checkAuth],
+  );
 
   // LOGOUT
   const logout = useCallback(async () => {
     try {
+      const token = localStorage.getItem("token");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
       await fetch(`${API_URL}/auth/logout`, {
         method: "POST",
         credentials: "include",
+        headers,
       });
     } catch (error) {
       console.error("Logout failed:", error);
     } finally {
+      localStorage.removeItem("token");
       setUser(null);
     }
   }, []);
@@ -63,6 +79,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
+
   useEffect(() => {
     const fetchCsrfToken = async () => {
       try {
