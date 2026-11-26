@@ -11,7 +11,6 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        console.log(profile);
         return done(null, profile);
       } catch (error) {
         return done(error, null);

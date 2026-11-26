@@ -8,12 +8,31 @@ import {
 
 import authMiddleware from "../middleware/authMiddleware.js";
 import adminMiddleware from "../middleware/adminMiddleware.js";
+import csrfMiddleware from "../middleware/csrfMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", authMiddleware, adminMiddleware, createBlockedDate);
+router.post(
+  "/",
+  authMiddleware,
+  adminMiddleware,
+  csrfMiddleware,
+  createBlockedDate,
+);
 router.get("/", authMiddleware, adminMiddleware, getBlockedDates);
-router.delete("/:id", authMiddleware, adminMiddleware, deleteBlockedDate);
-router.put("/:id", authMiddleware, adminMiddleware, updateBlockedDate);
+router.delete(
+  "/:id",
+  authMiddleware,
+  adminMiddleware,
+  csrfMiddleware,
+  deleteBlockedDate,
+);
 
+router.put(
+  "/:id",
+  authMiddleware,
+  adminMiddleware,
+  csrfMiddleware,
+  updateBlockedDate,
+);
 export default router;

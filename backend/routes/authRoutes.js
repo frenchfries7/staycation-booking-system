@@ -21,6 +21,11 @@ router.get("/me", authMiddleware, getMe);
 
 router.post("/logout", csrfMiddleware, logout);
 
-router.put("/:id", authMiddleware, adminMiddleware, updateInformation);
-
+router.put(
+  "/:id",
+  authMiddleware,
+  adminMiddleware,
+  csrfMiddleware,
+  updateInformation,
+);
 export default router;

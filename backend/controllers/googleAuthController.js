@@ -11,6 +11,11 @@ const cookieOptions = {
 
 export const googleCallback = async (req, res) => {
   try {
+    if (!req.user) {
+      return res.redirect(
+        `${process.env.FRONTEND_URL}/login?error=google_auth_failed`,
+      );
+    }
     const { id, displayName, emails, photos } = req.user;
 
     const email = emails?.[0]?.value?.toLowerCase();
@@ -38,12 +43,15 @@ export const googleCallback = async (req, res) => {
         profilePicture: photos?.[0]?.value || "",
       });
     }
-
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET is not configured.");
+    }
     const token = jwt.sign(
       { userId: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "7d" },
     );
+
     res.cookie("token", token, cookieOptions);
 
     return res.redirect(`${process.env.FRONTEND_URL}/google-success`);
