@@ -1,15 +1,18 @@
+
 import jwt from "jsonwebtoken";
 
 const authMiddleware = (req, res, next) => {
   try {
-    // Get JWT from HttpOnly cookie or Authorization header (for Incognito / cross-site fallback)
     const authHeader = req.headers.authorization;
+
     const bearerToken =
       authHeader && authHeader.startsWith("Bearer ")
         ? authHeader.split(" ")[1]
         : null;
 
-    const token = req.cookies?.token || bearerToken;
+    // Prefer the Bearer token when one is provided.
+    // Otherwise, use the authentication cookie.
+    const token = bearerToken || req.cookies?.token;
 
     if (!token) {
       return res.status(401).json({

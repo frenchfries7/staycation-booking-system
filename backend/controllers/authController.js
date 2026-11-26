@@ -72,6 +72,8 @@ export const register = async (req, res) => {
 };
 
 // LOGIN
+
+// LOGIN
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -83,7 +85,11 @@ export const login = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ email }).select("+password");
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const user = await User.findOne({
+      email: normalizedEmail,
+    }).select("+password");
 
     if (!user) {
       return res.status(401).json({
@@ -102,10 +108,14 @@ export const login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { userId: user._id, role: user.role },
+      {
+        userId: user._id,
+        role: user.role,
+      },
       process.env.JWT_SECRET,
       { expiresIn: "7d" },
     );
+
     const csrfToken = crypto.randomBytes(32).toString("hex");
 
     res.cookie("csrfToken", csrfToken, {
@@ -115,11 +125,13 @@ export const login = async (req, res) => {
       maxAge: 60 * 60 * 1000,
       path: "/",
     });
+
     res.cookie("token", token, cookieOptions);
 
     return res.status(200).json({
       success: true,
       message: "Login successful.",
+      token,
       user: {
         id: user._id,
         name: user.name,
@@ -128,12 +140,15 @@ export const login = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error("Login error:", error);
+
     return res.status(500).json({
       success: false,
       message: "Login failed.",
     });
   }
 };
+
 export const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.userId);

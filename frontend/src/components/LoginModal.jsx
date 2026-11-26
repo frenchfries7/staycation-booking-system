@@ -1,12 +1,15 @@
 import GoogleLoginButton from "./GoogleLoginButton";
 import "./LoginModal.css";
 import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
 
 function LoginModal({ isOpen, onClose }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const { login } = useAuth();
 
   if (!isOpen) return null;
 
@@ -25,7 +28,10 @@ function LoginModal({ isOpen, onClose }) {
             "Content-Type": "application/json",
           },
           credentials: "include",
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({
+            email,
+            password,
+          }),
         },
       );
 
@@ -35,18 +41,26 @@ function LoginModal({ isOpen, onClose }) {
         throw new Error(data.message || "Login failed.");
       }
 
-      // Ask who just logged in so admins go to the admin dashboard
-      const meResponse = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/auth/me`,
-        {
-          credentials: "include",
-        },
-      );
-      const meData = await meResponse.json();
+      if (!data.token) {
+        throw new Error(
+          "Login succeeded, but no authentication token was received.",
+        );
+      }
 
+      // Save JWT and update authentication state.
+      const authenticated = await login(data.token);
+
+      if (!authenticated) {
+        throw new Error(
+          "Login succeeded, but your account could not be authenticated.",
+        );
+      }
+
+      // Redirect based on the authenticated user's role.
       onClose();
+
       window.location.href =
-        meData.user?.role === "admin" ? "/admin/dashboard" : "/";
+        data.user?.role === "admin" ? "/admin/dashboard" : "/";
     } catch (error) {
       setError(error.message);
     } finally {
