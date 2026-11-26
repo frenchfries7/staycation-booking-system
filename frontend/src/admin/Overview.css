@@ -10,7 +10,7 @@
   width: 100%;
   min-width: 0;
   min-height: 100vh;
-  padding: var(--page-padding) var(--page-padding) 48px;
+  padding: 12px var(--page-padding) 48px;
   box-sizing: border-box;
   background: #f5f8fc;
   color: #202b4d;
@@ -190,7 +190,7 @@
 
 .overview-stats {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--card-gap);
   margin-bottom: var(--section-gap);
 }
@@ -301,6 +301,8 @@
 .overview-table-wrapper {
   width: 100%;
   min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .overview-table {
@@ -311,7 +313,7 @@
 }
 
 .overview-table th {
-  padding: 12px 9px;
+  padding: 12px 7px;
   border-bottom: 1px solid #e9e4dd;
   color: #8a95a4;
   font-size: 9px;
@@ -323,7 +325,7 @@
 }
 
 .overview-table td {
-  padding: 15px 9px;
+  padding: 15px 7px;
   border-bottom: 1px solid #f0ede8;
   color: #52647a;
   font-size: 11px;
@@ -363,6 +365,40 @@
 .overview-payment {
   white-space: nowrap;
 }
+
+.overview-table td .overview-payment {
+  display: block;
+  margin-top: 6px;
+  color: #8a95a4;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.overview-table td .overview-status {
+  margin-top: 8px;
+}
+
+.overview-stay {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.overview-stay span {
+  white-space: nowrap;
+}
+
+.overview-stay em {
+  display: inline-block;
+  width: 24px;
+  color: #8a95a4;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
 
 .overview-status {
   display: inline-block;
@@ -500,7 +536,7 @@
 
 @media (max-width: 1200px) {
   .overview-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .overview-bottom-grid {
@@ -513,14 +549,14 @@
   }
 
   .overview-table {
-    min-width: 760px;
+    min-width: 440px;
   }
 }
 
 @media (max-width: 1024px) {
   .overview-page {
     --page-padding: 22px;
-    padding: 28px 22px 40px;
+    padding: 12px 22px 40px;
   }
 }
 
@@ -530,7 +566,38 @@
   .overview-page {
     --heading-gap: 20px;
     --panel-padding: 15px;
-    padding: 22px 12px 35px;
+    padding: 12px 12px 35px;
+  }
+
+  .overview-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .overview-stat-card {
+    min-height: 0;
+    padding: 12px;
+  }
+
+  .overview-stat-top {
+    align-items: flex-start;
+    gap: 6px;
+    font-size: 10px;
+  }
+
+  .overview-stat-top svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .overview-stat-card h3 {
+    margin: 12px 0 8px;
+    font-size: 17px;
+  }
+
+  .overview-stat-card p {
+    font-size: 9px;
+    line-height: 1.4;
   }
 
   .overview-header h1 {
@@ -611,8 +678,8 @@
   .overview-table tbody tr {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px 12px;
-    padding: 16px;
+    gap: 12px;
+    padding: 14px;
     border: 1px solid #eae6df;
     border-radius: 10px;
     background: #fff;
@@ -641,10 +708,16 @@
     text-transform: uppercase;
   }
 
-  .overview-table tbody td:first-child {
-    grid-column: 1 / -1;
-    padding-bottom: 13px;
-    border-bottom: 1px solid #eeeae4;
+  /* Row 1: reference + status (left), View button (right) */
+  .overview-table tbody td[data-label="Booking"] {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .overview-table tbody td[data-label="Action"] {
+    grid-column: 2;
+    grid-row: 1;
+    align-items: flex-end;
   }
 
   .overview-guest strong {
@@ -666,16 +739,43 @@
     font-size: 12px;
   }
 
-  .overview-table tbody td:last-child {
+  /* Row 2: customer */
+  .overview-table tbody td[data-label="Customer"] {
     grid-column: 1 / -1;
+    grid-row: 2;
     padding-top: 12px;
     border-top: 1px solid #eeeae4;
   }
 
+  /* Row 3: stay (left), amount (right) */
+  .overview-table tbody td[data-label="Stay"] {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
+  .overview-table tbody td[data-label="Amount"] {
+    grid-column: 2;
+    grid-row: 3;
+    align-items: flex-end;
+    text-align: right;
+  }
+
+  /* These three are self-explanatory, so no tiny label above them */
+  .overview-table tbody td[data-label="Booking"]::before,
+  .overview-table tbody td[data-label="Customer"]::before,
+  .overview-table tbody td[data-label="Action"]::before {
+    display: none;
+  }
+
+  /* Show the 3 latest only so Today's schedule isn't buried ("View all" has the rest) */
+  .overview-table tbody tr:nth-child(n + 4) {
+    display: none;
+  }
+
   .overview-action-link {
-    display: block;
-    width: 100%;
-    padding: 10px 12px;
+    display: inline-block;
+    width: auto;
+    padding: 8px 16px;
     background: #f1f4f7;
     border-color: #e2e8ef;
     color: #23466b;
@@ -684,12 +784,25 @@
   }
 
   .overview-schedule-item {
-    grid-template-columns: 1fr;
-    gap: 7px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 7px 10px;
+  }
+
+  .overview-schedule-time {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .overview-schedule-details {
+    grid-column: 1;
+    grid-row: 2;
   }
 
   .overview-schedule-badge {
-    justify-self: start;
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    justify-self: end;
+    align-self: center;
   }
 }
 
@@ -701,12 +814,12 @@
   }
 
   .overview-stat-card {
-    min-height: 120px;
+    min-height: 0;
     padding: 12px;
   }
 
   .overview-stat-card h3 {
-    font-size: 19px;
+    font-size: 16px;
   }
 
   .overview-stat-top {
@@ -737,4 +850,80 @@
     padding: 13px;
     gap: 14px 9px;
   }
-}   
+}
+
+/* Narrow phones: keep everything inside its card, whatever the screen width */
+
+@media (max-width: 460px) {
+  .overview-stat-card h3 {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 420px) {
+  .overview-header {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .overview-header > div:first-child {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .overview-header h1 {
+    font-size: 28px;
+  }
+
+  .overview-header-actions {
+    gap: 8px;
+  }
+
+  .overview-notification,
+  .overview-header-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+
+  .overview-panel-header {
+    flex-wrap: wrap;
+  }
+
+  .overview-stay span {
+    white-space: normal;
+  }
+}
+
+/* Only when 3 across no longer fits: 2 cards, then the third on its own row */
+@media (max-width: 380px) {
+  .overview-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .overview-stat-card:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .overview-stat-card h3 {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 320px) {
+  .overview-stat-card h3 {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 340px) {
+  .overview-welcome-icon {
+    display: none;
+  }
+}
+
+@media (max-width: 290px) {
+  .overview-stats {
+    grid-template-columns: 1fr;
+  }
+}
