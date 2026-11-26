@@ -1,3 +1,4 @@
+
 import crypto from "crypto";
 
 const csrfMiddleware = (req, res, next) => {
@@ -6,24 +7,31 @@ const csrfMiddleware = (req, res, next) => {
 
   const safeMethods = ["GET", "HEAD", "OPTIONS"];
 
-  // Allow safe methods
-  if (safeMethods.includes(req.method)) {
-    return next();
-  }
-
-  // Validate request origin
-  if (!requestOrigin || requestOrigin !== allowedOrigin) {
+  // Always validate the origin for requests that provide one.
+  if (requestOrigin && requestOrigin !== allowedOrigin) {
     return res.status(403).json({
       success: false,
       message: "Forbidden. Invalid request origin.",
     });
   }
 
-  // Get CSRF token from cookie and request header
+  // Safe requests do not need CSRF validation.
+  if (safeMethods.includes(req.method)) {
+    return next();
+  }
+
+  // Bearer authentication is validated by authMiddleware
+  // on the individual protected routes.
+  const authHeader = req.headers.authorization;
+
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    return next();
+  }
+
+  // Cookie-authenticated requests must pass CSRF validation.
   const cookieToken = req.cookies?.csrfToken;
   const headerToken = req.headers["x-csrf-token"];
 
-  // Validate token presence and matching
   if (!cookieToken || !headerToken) {
     return res.status(403).json({
       success: false,
@@ -34,7 +42,6 @@ const csrfMiddleware = (req, res, next) => {
   const cookieBuffer = Buffer.from(cookieToken);
   const headerBuffer = Buffer.from(headerToken);
 
-  // Prevent unequal buffer lengths from causing comparison errors
   if (
     cookieBuffer.length !== headerBuffer.length ||
     !crypto.timingSafeEqual(cookieBuffer, headerBuffer)

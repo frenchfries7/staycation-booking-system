@@ -1,121 +1,244 @@
+
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 
+// Get the JWT token saved after login.
+function getAuthToken() {
+  return localStorage.getItem("token") || "";
+}
+
+// Create a reusable API error.
 function apiError(message, code) {
   const error = new Error(message);
   error.code = code;
   return error;
 }
 
-// Your server protects /bookings and /payments with a CSRF token:
-// GET /csrf-token sets a cookie, and we send the same token back in a header.
-let csrf = { token: "", at: 0 };
+// CSRF token cache for cookie-authenticated requests.
+let csrf = {
+  token: "",
+  at: 0,
+};
 
-async function getCsrfToken() {
-  if (csrf.token && Date.now() - csrf.at < 50 * 60 * 1000) return csrf.token;
+// Fetch a fresh CSRF token from the backend.
+async function getCsrfToken(forceRefresh = false) {
+  const TOKEN_LIFETIME = 50 * 60 * 1000;
+
+  if (
+    !forceRefresh &&
+    csrf.token &&
+    Date.now() - csrf.at < TOKEN_LIFETIME
+  ) {
+    return csrf.token;
+  }
+
   try {
-    const res = await fetch(`${API_URL}/csrf-token`, {
+    const response = await fetch(`${API_URL}/csrf-token`, {
+      method: "GET",
       credentials: "include",
     });
-    const data = await res.json();
-    csrf = { token: data.csrfToken || "", at: Date.now() };
-  } catch {
-    csrf = { token: "", at: 0 };
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok || !data.csrfToken) {
+      throw new Error(
+        data.message || "Unable to obtain CSRF token."
+      );
+    }
+
+    csrf = {
+      token: data.csrfToken,
+      at: Date.now(),
+    };
+
+    return csrf.token;
+  } catch (error) {
+    csrf = {
+      token: "",
+      at: 0,
+    };
+
+    throw apiError(
+      error.message || "Unable to obtain CSRF token.",
+      "csrf"
+    );
   }
-  return csrf.token;
 }
 
-async function request(path, { method = "GET", body } = {}) {
-  const token = await getCsrfToken();
+// Reusable API request.
+async function request(
+  path,
+  {
+    method = "GET",
+    body,
+    retryCsrf = true,
+  } = {}
+) {
+  const authToken = getAuthToken();
+  const upperMethod = method.toUpperCase();
 
-  let res;
+  const isSafeMethod = ["GET", "HEAD", "OPTIONS"].includes(
+    upperMethod
+  );
+
+  let csrfToken = "";
+
+  // Only obtain a CSRF token when using cookie authentication.
+  // Bearer-authenticated requests are validated by authMiddleware.
+  if (!isSafeMethod && !authToken) {
+    csrfToken = await getCsrfToken();
+  }
+
+  const headers = {
+    "Content-Type": "application/json",
+
+    // Send JWT authentication token when available.
+    ...(authToken
+      ? {
+          Authorization: `Bearer ${authToken}`,
+        }
+      : {}),
+
+    // Send CSRF token for cookie-authenticated requests.
+    ...(csrfToken
+      ? {
+          "x-csrf-token": csrfToken,
+        }
+      : {}),
+  };
+
+  let response;
+
   try {
-    res = await fetch(`${API_URL}${path}`, {
+    response = await fetch(`${API_URL}${path}`, {
       method,
       credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        // TODO: if your csrfMiddleware reads a different header name, change it here
-        ...(token ? { "x-csrf-token": token } : {}),
-      },
-      body: body ? JSON.stringify(body) : undefined,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
     });
   } catch {
     throw apiError(
-      "We can’t reach the server. Check your connection and try again.",
-      "network",
+      "We can't reach the server. Check your connection and try again.",
+      "network"
     );
   }
 
-  const data = await res.json().catch(() => ({}));
-  if (res.ok) return data;
+  const data = await response.json().catch(() => ({}));
+
+  // Retry once if the CSRF cookie/header is missing or invalid.
+  if (
+    response.status === 403 &&
+    retryCsrf &&
+    !authToken &&
+    /csrf token missing|invalid token/i.test(data.message || "")
+  ) {
+    csrf = {
+      token: "",
+      at: 0,
+    };
+
+    return request(path, {
+      method,
+      body,
+      retryCsrf: false,
+    });
+  }
+
+  if (response.ok) {
+    return data;
+  }
 
   const code =
-    res.status === 401
+    response.status === 401
       ? "unauthorized"
-      : res.status === 403
+      : response.status === 403
         ? "forbidden"
-        : res.status === 409
+        : response.status === 409
           ? "conflict"
           : "error";
+
   throw apiError(
     data.message || "Something went wrong. Please try again.",
-    code,
+    code
   );
 }
 
-// Uses the existing GET /bookings/availability?checkIn=YYYY-MM-DD route.
-// Returns true (free), false (reserved) or null (couldn't check).
+// Check whether a date is available.
+// true = available
+// false = reserved
+// null = unable to check
 export async function checkDateAvailability(dateKey) {
   try {
     const data = await request(
-      `/bookings/availability?checkIn=${encodeURIComponent(dateKey)}`,
+      `/bookings/availability?checkIn=${encodeURIComponent(dateKey)}`
     );
-    return typeof data.available === "boolean" ? data.available : null;
+
+    return typeof data.available === "boolean"
+      ? data.available
+      : null;
   } catch {
     return null;
   }
 }
 
-// Price and capacity from the server. Returns null if it can't be loaded.
-// TODO: adjust if your /accommodation route returns a different shape
+// Get accommodation price and capacity.
 export async function getAccommodation() {
   try {
     const data = await request("/accommodation");
+
     const item =
       data.accommodation ||
       data.data ||
-      (Array.isArray(data.accommodations) ? data.accommodations[0] : null) ||
+      (Array.isArray(data.accommodations)
+        ? data.accommodations[0]
+        : null) ||
       data;
+
     const price = Number(item?.price);
     const capacity = Number(item?.capacity);
-    if (!Number.isFinite(price) || price <= 0) return null;
+
+    if (!Number.isFinite(price) || price <= 0) {
+      return null;
+    }
+
     return {
       price,
-      capacity: Number.isFinite(capacity) && capacity > 0 ? capacity : null,
+      capacity:
+        Number.isFinite(capacity) && capacity > 0
+          ? capacity
+          : null,
     };
   } catch {
     return null;
   }
 }
 
-// Creates a pending booking that holds the date for 15 minutes
-export async function createBooking({ checkIn, numberOfGuests }) {
+// Create a pending booking.
+export async function createBooking({
+  checkIn,
+  numberOfGuests,
+}) {
   const data = await request("/bookings", {
     method: "POST",
-    body: { checkIn, numberOfGuests },
+    body: {
+      checkIn,
+      numberOfGuests,
+    },
   });
+
   return data.booking;
 }
 
-// Adds pool access to your own pending booking. The server works out the fee
-// and updates the booking total and downpayment before any payment starts.
+// Add pool access to an existing booking.
 export async function addPoolAccess(bookingId) {
-  return request(`/bookings/${encodeURIComponent(bookingId)}/pool-access`, {
-    method: "POST",
-  });
+  return request(
+    `/bookings/${encodeURIComponent(bookingId)}/pool-access`,
+    {
+      method: "POST",
+    }
+  );
 }
 
-// Starts a GCash / Maya payment. paymentMethod is "GCash" or "Maya".
+// Create GCash or Maya payment.
 export async function createPayment({
   bookingId,
   paymentMethod,
@@ -123,24 +246,35 @@ export async function createPayment({
 }) {
   return request("/payments", {
     method: "POST",
-    body: { bookingId, paymentMethod, paymentPurpose },
+    body: {
+      bookingId,
+      paymentMethod,
+      paymentPurpose,
+    },
   });
 }
 
+// Get payment status.
 export const getPaymentStatus = (paymentIntentId) =>
-  request(`/payments/${encodeURIComponent(paymentIntentId)}`);
+  request(
+    `/payments/${encodeURIComponent(paymentIntentId)}`
+  );
 
+// Get the logged-in customer's bookings.
 export async function getMyBookings() {
   const data = await request("/bookings/my-bookings");
+
   return data.bookings || [];
 }
 
+// Cancel a booking.
 export async function cancelBooking(bookingId) {
   const data = await request(
     `/bookings/${encodeURIComponent(bookingId)}/cancel`,
     {
       method: "PATCH",
-    },
+    }
   );
+
   return data.booking;
 }

@@ -4,22 +4,33 @@ import { useAuth } from "../context/AuthContext";
 
 function GoogleSuccess() {
   const navigate = useNavigate();
-  const { checkAuth } = useAuth();
+  const { login } = useAuth();
 
   useEffect(() => {
     const verifyGoogleLogin = async () => {
-      const hash = window.location.hash;
-      if (hash.startsWith("#token=")) {
-        const token = hash.replace("#token=", "");
-        localStorage.setItem("token", token);
+      try {
+        const hash = window.location.hash;
+
+        if (!hash.startsWith("#token=")) {
+          throw new Error("Google authentication token is missing.");
+        }
+
+        const token = decodeURIComponent(hash.substring("#token=".length));
+
+        // Remove the token from the browser URL.
         window.history.replaceState(null, "", window.location.pathname);
-      }
 
-      const success = await checkAuth();
+        // Save token and verify the authenticated user.
+        const success = await login(token);
 
-      if (success) {
+        if (!success) {
+          throw new Error("Unable to verify Google authentication.");
+        }
+
         navigate("/", { replace: true });
-      } else {
+      } catch (error) {
+        console.error("Google login verification failed:", error);
+
         navigate("/?error=google_auth_failed", {
           replace: true,
         });
@@ -27,7 +38,7 @@ function GoogleSuccess() {
     };
 
     verifyGoogleLogin();
-  }, [checkAuth, navigate]);
+  }, [login, navigate]);
 
   return <h2>Completing Google Sign-In...</h2>;
 }
