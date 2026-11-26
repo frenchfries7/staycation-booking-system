@@ -345,15 +345,6 @@ const Overview = () => {
 
         <div className="overview-stat-card">
           <div className="overview-stat-top">
-            <span>Occupancy rate</span>
-            <Icon name="bed" />
-          </div>
-          <h3>—</h3>
-          <p>Requires property capacity data</p>
-        </div>
-
-        <div className="overview-stat-card">
-          <div className="overview-stat-top">
             <span>Pending payments</span>
             <Icon name="card" />
           </div>
@@ -384,14 +375,10 @@ const Overview = () => {
               <table className="overview-table">
                 <thead>
                   <tr>
-                    <th>Booking Reference</th>
+                    <th>Booking</th>
                     <th>Customer</th>
-                    <th>Check-in</th>
-                    <th>Check-out</th>
-                    <th>Guests</th>
-                    <th>Total Amount</th>
-                    <th>Payment</th>
-                    <th>Status</th>
+                    <th>Stay</th>
+                    <th>Amount</th>
                     <th>Action</th>
                   </tr>
                 </thead>
@@ -399,48 +386,44 @@ const Overview = () => {
                 <tbody>
                   {recentBookings.map((booking) => (
                     <tr key={booking._id}>
-                      <td data-label="Booking Reference">
+                      <td data-label="Booking">
                         <strong className="overview-booking-reference">
                           {booking.bookingReference || "No reference"}
                         </strong>
-                      </td>
-
-                      <td data-label="Customer">
-                        <div className="overview-guest">
-                          <strong>{getGuestName(booking)}</strong>
-                          <small>{booking.userId?.email || "No email"}</small>
-                        </div>
-                      </td>
-
-                      <td data-label="Check-in">
-                        {formatDate(booking.checkIn)}
-                      </td>
-
-                      <td data-label="Check-out">
-                        {formatDate(booking.checkOut)}
-                      </td>
-
-                      <td data-label="Guests">{booking.numberOfGuests ?? 0}</td>
-
-                      <td data-label="Total Amount">
-                        <strong className="overview-total">
-                          {formatCurrency(booking.totalAmount)}
-                        </strong>
-                      </td>
-
-                      <td data-label="Payment">
-                        <strong className="overview-payment">
-                          {getPaymentStatus(booking.paymentStatus)}
-                        </strong>
-                      </td>
-
-                      <td data-label="Status">
                         <span
                           className={`overview-status ${normalizeStatus(
                             booking.bookingStatus,
                           )}`}
                         >
                           {getBookingStatus(booking.bookingStatus)}
+                        </span>
+                      </td>
+
+                      <td data-label="Customer">
+                        <div className="overview-guest">
+                          <strong>{getGuestName(booking)}</strong>
+                          <small>{booking.userId?.email || "No email"}</small>
+                          <small>Guests: {booking.numberOfGuests ?? 0}</small>
+                        </div>
+                      </td>
+
+                      <td data-label="Stay">
+                        <div className="overview-stay">
+                          <span>
+                            <em>In</em> {formatDate(booking.checkIn)}
+                          </span>
+                          <span>
+                            <em>Out</em> {formatDate(booking.checkOut)}
+                          </span>
+                        </div>
+                      </td>
+
+                      <td data-label="Amount">
+                        <strong className="overview-total">
+                          {formatCurrency(booking.totalAmount)}
+                        </strong>
+                        <span className="overview-payment">
+                          {getPaymentStatus(booking.paymentStatus)}
                         </span>
                       </td>
 
