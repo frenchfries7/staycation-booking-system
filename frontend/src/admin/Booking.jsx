@@ -4,6 +4,8 @@ import "./Booking.css";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 
+const ITEMS_PER_PAGE = 10;
+
 const formatDate = (date) => {
   if (!date) return "—";
 
@@ -27,6 +29,28 @@ const normalizeStatus = (status) =>
     .replaceAll("_", " ")
     .trim();
 
+const getPaymentLabel = (status) => {
+  const value = normalizeStatus(status);
+
+  if (["paid", "fully paid", "full payment"].includes(value)) {
+    return "Fully paid";
+  }
+
+  if (
+    [
+      "partial",
+      "partially paid",
+      "partial payment",
+      "downpayment",
+      "down payment",
+    ].includes(value)
+  ) {
+    return "Partial";
+  }
+
+  return "Unpaid";
+};
+
 const Booking = () => {
   const [bookings, setBookings] = useState([]);
   const [search, setSearch] = useState("");
@@ -34,6 +58,7 @@ const Booking = () => {
   const [error, setError] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const fetchBookings = async () => {
     try {
@@ -126,6 +151,22 @@ const Booking = () => {
     return result;
   }, [bookings, search, statusFilter, sortBy]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter, sortBy]);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredBookings.length / ITEMS_PER_PAGE),
+  );
+  const safePage = Math.min(currentPage, totalPages);
+  const startIndex = (safePage - 1) * ITEMS_PER_PAGE;
+
+  const paginatedBookings = filteredBookings.slice(
+    startIndex,
+    startIndex + ITEMS_PER_PAGE,
+  );
+
   const exportBookings = () => {
     if (filteredBookings.length === 0) {
       alert("There are no bookings to export.");
@@ -140,7 +181,7 @@ const Booking = () => {
       "Check-out": formatDate(booking.checkOut),
       Guests: booking.numberOfGuests ?? 0,
       "Total Amount": Number(booking.totalAmount || 0),
-      Payment: booking.paymentStatus || "Unknown",
+      Payment: getPaymentLabel(booking.paymentStatus),
       Status: booking.bookingStatus || "Unknown",
     }));
 
@@ -183,29 +224,6 @@ const Booking = () => {
             <h2>All reservations</h2>
             <p>Manage guest bookings and reservation status</p>
           </div>
-
-          <button
-            type="button"
-            className="booking-export-button"
-            onClick={exportBookings}
-            disabled={loading || filteredBookings.length === 0}
-          >
-            <svg
-              width="17"
-              height="17"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.7"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M12 3v12" />
-              <path d="m7 10 5 5 5-5" />
-              <path d="M5 17v3h14v-3" />
-            </svg>
-            Export Excel
-          </button>
         </div>
 
         <div className="booking-controls">
@@ -274,12 +292,39 @@ const Booking = () => {
               <option value="amount-low">Amount: Lowest</option>
             </select>
           </div>
+
+          <button
+            type="button"
+            className="booking-export-button"
+            onClick={exportBookings}
+            disabled={loading || filteredBookings.length === 0}
+          >
+            <svg
+              width="17"
+              height="17"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 3v12" />
+              <path d="m7 10 5 5 5-5" />
+              <path d="M5 17v3h14v-3" />
+            </svg>
+            Export Excel
+          </button>
         </div>
 
         <div className="booking-results-info">
           <span>
-            Showing <strong>{filteredBookings.length}</strong> of{" "}
-            <strong>{bookings.length}</strong> reservations
+            Showing{" "}
+            <strong>
+              {filteredBookings.length === 0 ? 0 : startIndex + 1}–
+              {Math.min(startIndex + ITEMS_PER_PAGE, filteredBookings.length)}
+            </strong>{" "}
+            of <strong>{filteredBookings.length}</strong> reservations
           </span>
         </div>
 
@@ -293,94 +338,137 @@ const Booking = () => {
             </button>
           </div>
         ) : (
-          <div className="booking-table-container">
-            <table className="booking-table">
-              <thead>
-                <tr>
-                  <th>Booking Reference</th>
-                  <th>Customer</th>
-                  <th>Check-in</th>
-                  <th>Check-out</th>
-                  <th>Guests</th>
-                  <th>Total Amount</th>
-                  <th>Payment</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
+          <>
+            <div className="booking-table-container">
+              <table className="booking-table">
+                <thead>
+                  <tr>
+                    <th>Booking Reference</th>
+                    <th>Customer</th>
+                    <th>Check-in</th>
+                    <th>Check-out</th>
+                    <th>Guests</th>
+                    <th>Total Amount</th>
+                    <th>Payment</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
 
-              <tbody>
-                {filteredBookings.length > 0 ? (
-                  filteredBookings.map((booking) => (
-                    <tr key={booking._id}>
-                      <td data-label="Booking Reference">
-                        <strong className="booking-reference">
-                          {booking.bookingReference || "—"}
-                        </strong>
-                      </td>
+                <tbody>
+                  {paginatedBookings.length > 0 ? (
+                    paginatedBookings.map((booking) => {
+                      const paymentLabel = getPaymentLabel(
+                        booking.paymentStatus,
+                      );
 
-                      <td data-label="Customer">
-                        <div className="booking-customer">
-                          <strong>{booking.userId?.name || "Unknown"}</strong>
-                          <small>{booking.userId?.email || "No email"}</small>
-                        </div>
-                      </td>
+                      return (
+                        <tr key={booking._id}>
+                          <td data-label="Booking Reference">
+                            <strong className="booking-reference">
+                              {booking.bookingReference || "—"}
+                            </strong>
+                          </td>
 
-                      <td data-label="Check-in">
-                        {formatDate(booking.checkIn)}
-                      </td>
+                          <td data-label="Customer">
+                            <div className="booking-customer">
+                              <strong>
+                                {booking.userId?.name || "Unknown"}
+                              </strong>
+                              <small>
+                                {booking.userId?.email || "No email"}
+                              </small>
+                            </div>
+                          </td>
 
-                      <td data-label="Check-out">
-                        {formatDate(booking.checkOut)}
-                      </td>
+                          <td data-label="Check-in">
+                            {formatDate(booking.checkIn)}
+                          </td>
 
-                      <td data-label="Guests">{booking.numberOfGuests ?? 0}</td>
+                          <td data-label="Check-out">
+                            {formatDate(booking.checkOut)}
+                          </td>
 
-                      <td data-label="Total Amount">
-                        <strong className="booking-amount">
-                          {formatCurrency(booking.totalAmount)}
-                        </strong>
-                      </td>
+                          <td data-label="Guests">
+                            {booking.numberOfGuests ?? 0}
+                          </td>
 
-                      <td data-label="Payment">
-                        <span className="booking-payment">
-                          {booking.paymentStatus || "Unknown"}
-                        </span>
-                      </td>
+                          <td data-label="Total Amount">
+                            <strong className="booking-amount">
+                              {formatCurrency(booking.totalAmount)}
+                            </strong>
+                          </td>
 
-                      <td data-label="Status">
-                        <span
-                          className={`booking-status ${normalizeStatus(
-                            booking.bookingStatus,
-                          ).replaceAll(" ", "-")}`}
-                        >
-                          {booking.bookingStatus || "Unknown"}
-                        </span>
-                      </td>
+                          <td data-label="Payment">
+                            <span
+                              className={`booking-payment ${paymentLabel
+                                .toLowerCase()
+                                .replaceAll(" ", "-")}`}
+                            >
+                              {paymentLabel}
+                            </span>
+                          </td>
 
-                      <td data-label="Action">
-                        <button
-                          type="button"
-                          className="booking-view-button"
-                          onClick={() =>
-                            console.log("Selected booking:", booking)
-                          }
-                        >
-                          View
-                        </button>
+                          <td data-label="Status">
+                            <span
+                              className={`booking-status ${normalizeStatus(
+                                booking.bookingStatus,
+                              ).replaceAll(" ", "-")}`}
+                            >
+                              {booking.bookingStatus || "Unknown"}
+                            </span>
+                          </td>
+
+                          <td data-label="Action">
+                            <button
+                              type="button"
+                              className="booking-view-button"
+                              onClick={() =>
+                                console.log("Selected booking:", booking)
+                              }
+                            >
+                              View
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan="9" className="booking-empty">
+                        No bookings found.
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="9" className="booking-empty">
-                      No bookings found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {filteredBookings.length > ITEMS_PER_PAGE && (
+              <div className="booking-pagination">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage(safePage - 1)}
+                  disabled={safePage === 1}
+                >
+                  Previous
+                </button>
+
+                <span className="booking-page-info">
+                  Page <strong>{safePage}</strong> of{" "}
+                  <strong>{totalPages}</strong>
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage(safePage + 1)}
+                  disabled={safePage === totalPages}
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
         )}
       </section>
     </div>
