@@ -43,6 +43,7 @@ const paymentSchema = new mongoose.Schema(
       enum: ["pending", "completed", "failed"],
       default: "pending",
     },
+
     receiptEmailSentAt: {
       type: Date,
       default: null,
@@ -52,6 +53,24 @@ const paymentSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
+
+// Prevent duplicate pending payments for the same booking and purpose
+paymentSchema.index(
+  {
+    bookingId: 1,
+    paymentPurpose: 1,
+  },
+  {
+    unique: true,
+    partialFilterExpression: {
+      paymentStatus: "pending",
+    },
+    name: "unique_active_payment_per_booking_purpose",
+  },
+);
+
+// Fast lookup of all payments associated with a booking
+paymentSchema.index({ bookingId: 1, createdAt: -1 });
 
 const Payment = mongoose.model("Payment", paymentSchema);
 
