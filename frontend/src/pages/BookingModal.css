@@ -1,4 +1,3 @@
-
 /* Reservation modal (also used by the payment result page) */
 .book-modal {
   --m-navy: #1f2547;
@@ -23,8 +22,8 @@
 .book-modal .modal-header {
   position: relative;
   align-items: flex-start;
-  padding: 1.6rem 4rem 0.75rem 1.75rem;
-  border: 0;
+  padding: 1.4rem 4rem 1rem 1.75rem;
+  border-bottom: 1px solid var(--m-line);
 }
 
 /* Close button sits in the top-right corner of the modal */
@@ -41,13 +40,82 @@
   opacity: 1;
 }
 
+.bm__head {
+  width: 100%;
+}
+
+.bm__head-top {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.7rem;
+}
+
 .bm__step {
-  margin: 0 0 0.4rem;
+  margin: 0;
   font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--m-muted);
+}
+
+/* Step 1: pill */
+.bm__step--pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.38rem 0.75rem;
+  border-radius: 999px;
+  background: #eef1f6;
+  color: var(--m-navy);
+}
+
+.bm__step--pill i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--m-navy);
+}
+
+/* Step 2: two progress bars */
+.bm__progress {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.bm__progress i {
+  width: 22px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--m-primary);
+}
+
+/* Countdown chip (navy; turns red in the last 2 minutes) */
+.bm__timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: auto;
+  padding: 0.32rem 0.7rem;
+  border: 1px solid #d3dfeb;
+  border-radius: 999px;
+  background: #eaf0f6;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--m-primary);
+}
+
+.bm__timer svg {
+  width: 14px;
+  height: 14px;
+}
+
+.bm__timer.is-low {
+  border-color: #f1d3c9;
+  background: #fbeeea;
+  color: #a4442c;
 }
 
 .book-modal .modal-title {
@@ -59,10 +127,11 @@
 }
 
 .book-modal .modal-body {
-  padding: 0.5rem 1.75rem 1.5rem;
+  padding: 1.25rem 1.75rem 1.5rem;
 }
 
 .book-modal .modal-footer {
+  justify-content: space-between;
   gap: 0.6rem;
   padding: 1rem 1.75rem 1.5rem;
   border-top: 1px solid var(--m-line);
@@ -74,10 +143,11 @@
   display: flex;
   align-items: center;
   gap: 0.9rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
   padding: 0.9rem 1rem;
   border: 1px solid var(--m-line);
   border-radius: 14px;
+  background: #faf8f4;
 }
 
 .bm__avatar {
@@ -119,88 +189,141 @@
   overflow-wrap: anywhere;
 }
 
-/* ---------- Stay details ---------- */
-.bm__details {
-  margin: 0 0 1.25rem;
+/* ---------- Stay details (card with a 2 x 2 grid) ---------- */
+.bm__card {
+  margin-bottom: 1rem;
   border: 1px solid var(--m-line);
   border-radius: 14px;
   overflow: hidden;
 }
 
-.bm__detail {
+.bm__card-head {
   display: flex;
-  justify-content: space-between;
-  gap: 1rem;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--m-line);
+  background: #faf9f6;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--m-navy);
+}
+
+.bm__details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin: 0;
+}
+
+.bm__detail {
   padding: 0.85rem 1rem;
 }
 
-.bm__detail + .bm__detail {
+.bm__detail:nth-child(odd) {
+  border-right: 1px solid var(--m-line);
+}
+
+.bm__detail:nth-child(n + 3) {
   border-top: 1px solid var(--m-line);
 }
 
 .bm__detail dt {
-  font-size: 0.82rem;
+  margin-bottom: 0.25rem;
+  font-size: 0.78rem;
   font-weight: 400;
   color: var(--m-muted);
 }
 
 .bm__detail dd {
   margin: 0;
-  text-align: right;
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   font-weight: 600;
+  line-height: 1.35;
   color: var(--m-navy);
 }
 
 .bm__detail dd small {
   display: block;
-  margin-top: 0.1rem;
-  font-size: 0.78rem;
+  margin-top: 0.15rem;
+  font-size: 0.8rem;
   font-weight: 400;
   color: var(--m-muted);
 }
 
 /* ---------- Price ---------- */
 .bm__totals {
-  margin-bottom: 0.9rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--m-line);
+  border-radius: 14px;
+  overflow: hidden;
 }
 
 .bm__totals-row {
   display: flex;
   justify-content: space-between;
-  padding: 0.3rem 0;
+  margin: 0 1.1rem;
+  padding: 0.75rem 0;
   font-size: 0.88rem;
   color: var(--m-muted);
 }
 
+.bm__totals-row:first-child {
+  padding-top: 0.9rem;
+}
+
 .bm__totals-row--total {
-  margin-top: 0.4rem;
-  padding-top: 0.85rem;
+  margin-bottom: 0;
+  padding-bottom: 0.9rem;
   border-top: 1px solid var(--m-line);
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 600;
   color: var(--m-navy);
 }
 
 .bm__due {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
   padding: 1rem 1.1rem;
-  border-radius: 14px;
-  background: #eaf0f6;
-  color: var(--m-primary);
+  background: #eef2f7;
+  color: var(--m-navy);
+}
+
+.bm__due > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .bm__due span {
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   font-weight: 600;
 }
 
+.bm__due small {
+  margin-top: 0.15rem;
+  font-size: 0.74rem;
+  line-height: 1.4;
+  color: var(--m-muted);
+}
+
 .bm__due strong {
-  font-size: 1.45rem;
+  flex: none;
+  font-size: 1.5rem;
   line-height: 1;
+  color: var(--m-navy);
+}
+
+/* Payment step: the due amount stands alone as a soft card */
+.bm__due--soft {
+  margin-bottom: 1rem;
+  border: 1px solid var(--m-line);
+  border-radius: 14px;
+  background: #faf8f4;
 }
 
 .bm__help {
@@ -211,48 +334,38 @@
 }
 
 /* ---------- Notes ---------- */
-.bm__hold,
-.bm__timer {
+.bm__hold {
   display: flex;
   align-items: flex-start;
-  gap: 0.6rem;
-  padding: 0.8rem 1rem;
-  border-radius: 12px;
-  background: #f6f1e7;
+  gap: 0.65rem;
+  margin: 0 0 1rem;
+  padding: 0;
   font-size: 0.8rem;
   line-height: 1.5;
-  color: #7a6440;
-}
-
-.bm__hold {
-  margin: 1.1rem 0;
-}
-
-.bm__timer {
-  align-items: center;
-  margin-bottom: 1rem;
-  font-size: 0.85rem;
-}
-
-.bm__hold svg,
-.bm__timer svg {
-  flex: none;
+  color: var(--m-muted);
 }
 
 .bm__hold svg {
-  margin-top: 0.15rem;
+  flex: none;
+  margin-top: 0.1rem;
+  width: 18px;
+  height: 18px;
+  color: #d9822b;
 }
 
-.bm__timer strong {
-  margin-left: auto;
-  font-size: 1.05rem;
-  font-variant-numeric: tabular-nums;
+.bm__hold strong {
+  color: var(--m-navy);
 }
 
+/* Agreement: plain checkbox + text, no outline box */
 .bm__agree {
   display: flex;
   align-items: flex-start;
   gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
   font-size: 0.85rem;
   line-height: 1.45;
   color: #3b4160;
@@ -266,7 +379,9 @@
 }
 
 .bm__agree a {
+  font-weight: 600;
   color: var(--m-primary);
+  text-decoration: underline;
 }
 
 .bm__error {
@@ -280,42 +395,99 @@
 
 /* ---------- Payment step ---------- */
 .bm__ref-card {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 1rem;
   margin-bottom: 1rem;
-  padding: 1rem 1.1rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--m-line);
   border-radius: 14px;
-  background: var(--m-soft);
+  background: #fff;
+  font-size: 0.85rem;
 }
 
-.bm__ref-card > div {
+.bm__ref-item {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
   min-width: 0;
 }
 
-.bm__ref-card span {
-  font-size: 0.68rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+.bm__ref-item span {
   color: var(--m-muted);
 }
 
-.bm__ref-card strong {
-  margin-top: 0.15rem;
-  font-size: 0.95rem;
+.bm__ref-item strong {
   color: var(--m-navy);
+  font-weight: 600;
+}
+
+.bm__ref-item:first-child strong {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
   overflow-wrap: anywhere;
 }
 
-.bm__ref-card small {
-  font-size: 0.78rem;
+.bm__ref-item--right {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.bm__copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 0.3rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 0.72rem;
+  font-weight: 600;
   color: var(--m-muted);
+  cursor: pointer;
+}
+
+.bm__copy:hover {
+  background: var(--m-soft);
+  color: var(--m-navy);
+}
+
+/* Door access note */
+.bm__note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--m-line);
+  border-radius: 14px;
+  background: #faf9f6;
+  color: var(--m-navy);
+}
+
+.bm__note svg {
+  flex: none;
+  margin-top: 0.1rem;
+  color: var(--m-navy);
+}
+
+.bm__note p {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: #3b4160;
+}
+
+.bm__note strong {
+  color: var(--m-navy);
 }
 
 .bm__heading {
-  margin: 1.4rem 0 0.6rem;
+  margin: 0 0 0.6rem;
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--m-navy);
@@ -330,13 +502,11 @@
 .bm__method {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  height: 52px;
+  gap: 0.7rem;
+  min-height: 64px;
+  padding: 0.7rem 0.85rem;
   border: 1px solid #d9dce2;
-  border-radius: 12px;
-  font-size: 0.95rem;
-  font-weight: 600;
+  border-radius: 14px;
   color: var(--m-navy);
   cursor: pointer;
   transition: border-color 0.15s ease, background 0.15s ease;
@@ -346,13 +516,17 @@
   border-color: var(--m-primary);
 }
 
+/* Radio on the right, logo + name on the left */
 .bm__method input {
+  order: 3;
+  margin: 0 0 0 auto;
   accent-color: var(--m-primary);
 }
 
 .bm__method.is-selected {
   border-color: var(--m-primary);
-  background: #f1f5f9;
+  box-shadow: inset 0 0 0 1px var(--m-primary);
+  background: #fff;
 }
 
 .bm__method:focus-within {
@@ -360,8 +534,37 @@
   outline-offset: 2px;
 }
 
+/* Official GCash / Maya logos: same square tile for both */
+.bm__method-logo,
+.bm__method-logo--gcash,
+.bm__method-logo--maya {
+  flex: none;
+  display: block;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.bm__method-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.bm__method-text strong {
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.bm__method-text small {
+  font-size: 0.74rem;
+  color: var(--m-muted);
+}
+
 .bm__warn {
-  margin: 1rem 0 0;
+  margin: 0 0 1rem;
   padding: 0.85rem 1rem;
   border-radius: 12px;
   background: #fbeeea;
@@ -390,6 +593,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.45rem;
   height: 46px;
   padding: 0 1.4rem;
   border: 1px solid transparent;
@@ -417,8 +621,12 @@
   color: #fff;
 }
 
+/* Disabled primary reads as a soft grey-blue, not a faded navy */
 .bm__btn--primary:disabled {
-  opacity: 0.45;
+  background-color: #8a97a8;
+  border-color: #8a97a8;
+  color: #fff;
+  opacity: 0.9;
   cursor: not-allowed;
 }
 
@@ -430,6 +638,11 @@
 
 .bm__btn--ghost:hover:not(:disabled) {
   border-color: #0f3a62;
+}
+
+/* Payment step: the pay button takes the remaining width */
+.bm__btn--wide {
+  flex: 1;
 }
 
 /* ---------- Payment result page ---------- */
@@ -483,15 +696,18 @@
   }
 
   .bm__ref-card {
-    grid-template-columns: 1fr;
+    flex-wrap: wrap;
   }
 
-  .book-modal .modal-footer {
-    flex-direction: column-reverse;
-  }
-
+  /* Step 1: Cancel + Continue side by side */
   .book-modal .modal-footer .bm__btn {
-    width: 100%;
     margin: 0;
+  }
+}
+
+/* Very small phones: stack GCash and Maya */
+@media (max-width: 400px) {
+  .bm__methods {
+    grid-template-columns: 1fr;
   }
 }
