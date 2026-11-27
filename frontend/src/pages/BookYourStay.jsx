@@ -34,10 +34,11 @@ import "./BookingModal.css";
 
 const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 const PAYMENT_METHODS = ["GCash", "Maya"];
-// DESIGN: label + icon letter shown on each payment method card
+// DESIGN: label + official logo shown on each payment method card
+// (put the files in frontend/public/images/payment/)
 const METHOD_INFO = {
-  GCash: { sub: "E-Wallet", letter: "G" },
-  Maya: { sub: "Wallet / QR", letter: "M" },
+  GCash: { sub: "E-Wallet", logo: "/images/payment/gcash.webp" },
+  Maya: { sub: "Wallet / QR", logo: "/images/payment/maya.webp" },
 };
 const CACHE_MS = 60 * 1000; // how long a date's availability is trusted
 const MAX_PARALLEL = 6; // availability checks sent at the same time
@@ -1039,12 +1040,13 @@ export default function BookYourStay({ onLoginClick }) {
                       checked={method === name}
                       onChange={() => setMethod(name)}
                     />
-                    <span
-                      className={`bm__method-icon bm__method-icon--${name.toLowerCase()}`}
-                      aria-hidden="true"
-                    >
-                      {METHOD_INFO[name].letter}
-                    </span>
+                    <img
+                      src={METHOD_INFO[name].logo}
+                      alt=""
+                      className={`bm__method-logo bm__method-logo--${name.toLowerCase()}`}
+                      width={name === "Maya" ? 72 : 36}
+                      height="36"
+                    />
                     <span className="bm__method-text">
                       <strong>{name}</strong>
                       <small>{METHOD_INFO[name].sub}</small>
