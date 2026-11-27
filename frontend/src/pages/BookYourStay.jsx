@@ -34,6 +34,11 @@ import "./BookingModal.css";
 
 const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 const PAYMENT_METHODS = ["GCash", "Maya"];
+// DESIGN: label + icon letter shown on each payment method card
+const METHOD_INFO = {
+  GCash: { sub: "E-Wallet", letter: "G" },
+  Maya: { sub: "Wallet / QR", letter: "M" },
+};
 const CACHE_MS = 60 * 1000; // how long a date's availability is trusted
 const MAX_PARALLEL = 6; // availability checks sent at the same time
 
@@ -54,6 +59,46 @@ const ClockIcon = () => (
   >
     <circle cx="12" cy="12" r="10" />
     <path d="M12 6v6l4 2" />
+  </svg>
+);
+
+// DESIGN: icons used by the new modal layout
+const iconProps = {
+  width: 16,
+  height: 16,
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.8,
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
+  "aria-hidden": "true",
+};
+
+const CalendarIcon = () => (
+  <svg {...iconProps}>
+    <rect x="3" y="5" width="18" height="16" rx="2" />
+    <path d="M16 3v4M8 3v4M3 10h18" />
+  </svg>
+);
+
+const LockIcon = () => (
+  <svg {...iconProps} width="18" height="18">
+    <rect x="4" y="11" width="16" height="10" rx="2" />
+    <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+  </svg>
+);
+
+const CopyIcon = () => (
+  <svg {...iconProps} width="15" height="15">
+    <rect x="9" y="9" width="12" height="12" rx="2" />
+    <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+  </svg>
+);
+
+const ChevronLeftIcon = () => (
+  <svg {...iconProps} width="14" height="14" strokeWidth="2.4">
+    <path d="M15 5l-7 7 7 7" />
   </svg>
 );
 
@@ -169,6 +214,7 @@ export default function BookYourStay({ onLoginClick }) {
   const [method, setMethod] = useState("GCash");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false); // DESIGN: "copy reference" feedback
 
   // ---------- Load data ----------
   useEffect(() => {
@@ -430,6 +476,17 @@ export default function BookYourStay({ onLoginClick }) {
       }
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  // DESIGN: copy the booking reference (payment step)
+  const handleCopyRef = async () => {
+    try {
+      await navigator.clipboard.writeText(pending.reference);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // clipboard not available: nothing to do
     }
   };
 
@@ -711,15 +768,36 @@ export default function BookYourStay({ onLoginClick }) {
         keyboard={!submitting}
       >
         <Modal.Header closeButton={!submitting}>
-          <div>
-            <p className="bm__step">
-              {step === "pay"
-                ? "Step 2 of 2 · Payment"
-                : "Step 1 of 2 · Review"}
-            </p>
+          <div className="bm__head">
+            <div className="bm__head-top">
+              {step === "pay" ? (
+                <>
+                  <span className="bm__progress" aria-hidden="true">
+                    <i />
+                    <i />
+                  </span>
+                  <p className="bm__step">Step 2 of 2</p>
+                  {pending && (
+                    <span
+                      className={`bm__timer${secondsLeft <= 120 ? " is-low" : ""}`}
+                      role="timer"
+                      aria-label="Time left to pay"
+                    >
+                      <ClockIcon />
+                      {formatTimeLeft(secondsLeft)}
+                    </span>
+                  )}
+                </>
+              ) : (
+                <p className="bm__step bm__step--pill">
+                  <i aria-hidden="true" />
+                  Step 1 of 2 • Review
+                </p>
+              )}
+            </div>
             <Modal.Title>
               {step === "pay"
-                ? "Pay your downpayment"
+                ? "Complete downpayment"
                 : "Confirm your reservation"}
             </Modal.Title>
           </div>
@@ -739,33 +817,39 @@ export default function BookYourStay({ onLoginClick }) {
                 </div>
               </div>
 
-              <dl className="bm__details">
-                <div className="bm__detail">
-                  <dt>Check-in</dt>
-                  <dd>
-                    {formatLong(checkIn)}
-                    <small>{CHECK_IN_LABEL}</small>
-                  </dd>
-                </div>
-                <div className="bm__detail">
-                  <dt>Check-out</dt>
-                  <dd>
-                    {formatLong(checkOut)}
-                    <small>{CHECK_OUT_LABEL}</small>
-                  </dd>
-                </div>
-                <div className="bm__detail">
-                  <dt>Length of stay</dt>
-                  <dd>{STAY_HOURS} hours</dd>
-                </div>
-                <div className="bm__detail">
-                  <dt>Guests</dt>
-                  <dd>
-                    {plural(guests, "guest")}
-                    {pool && <small>Pool access included</small>}
-                  </dd>
-                </div>
-              </dl>
+              <div className="bm__card">
+                <p className="bm__card-head">
+                  <CalendarIcon />
+                  Stay details
+                </p>
+                <dl className="bm__details">
+                  <div className="bm__detail">
+                    <dt>Check-in</dt>
+                    <dd>
+                      {formatLong(checkIn)}
+                      <small>From {CHECK_IN_LABEL}</small>
+                    </dd>
+                  </div>
+                  <div className="bm__detail">
+                    <dt>Check-out</dt>
+                    <dd>
+                      {formatLong(checkOut)}
+                      <small>Before {CHECK_OUT_LABEL}</small>
+                    </dd>
+                  </div>
+                  <div className="bm__detail">
+                    <dt>Duration</dt>
+                    <dd>{STAY_HOURS} hours • 1 night</dd>
+                  </div>
+                  <div className="bm__detail">
+                    <dt>Guests</dt>
+                    <dd>
+                      {plural(guests, "guest")}
+                      {pool && <small>Pool access included</small>}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
 
               <div className="bm__totals">
                 <div className="bm__totals-row">
@@ -779,26 +863,31 @@ export default function BookYourStay({ onLoginClick }) {
                   </div>
                 )}
                 <div className="bm__totals-row bm__totals-row--total">
-                  <span>Total</span>
+                  <span>Total stay amount</span>
                   <span>{peso(quote.total)}</span>
                 </div>
+                <div className="bm__due">
+                  <div>
+                    <span>
+                      Due now (
+                      {Math.round((quote.downpayment / quote.total) * 100)}%
+                      downpayment)
+                    </span>
+                    <small>
+                      Remaining balance of {peso(quote.balance)} is due before
+                      your stay
+                    </small>
+                  </div>
+                  <strong>{peso(quote.downpayment)}</strong>
+                </div>
               </div>
-
-              <div className="bm__due">
-                <span>Due now (downpayment)</span>
-                <strong>{peso(quote.downpayment)}</strong>
-              </div>
-              <p className="bm__help">
-                The remaining balance of {peso(quote.balance)} is paid before
-                your stay.
-              </p>
 
               <p className="bm__hold">
                 <ClockIcon />
                 <span>
-                  Continuing holds this date for {HOLD_MINUTES} minutes while
-                  you pay. If the downpayment isn’t received, the date is
-                  released.
+                  Continuing holds your date for{" "}
+                  <strong>{HOLD_MINUTES} minutes</strong> while you complete
+                  payment. If payment isn’t received, the date is released.
                 </span>
               </p>
 
@@ -810,7 +899,7 @@ export default function BookYourStay({ onLoginClick }) {
                 />
                 <span>
                   I’ve read and agree to the{" "}
-                  <a href="#house-rules" onClick={closeModal}>
+                  <a href="/#house-rules" onClick={closeModal}>
                     house rules
                   </a>
                   .
@@ -845,7 +934,9 @@ export default function BookYourStay({ onLoginClick }) {
                     Reserving…
                   </>
                 ) : (
-                  "Reserve & continue to payment"
+                  <>
+                    Continue to payment <span aria-hidden="true">→</span>
+                  </>
                 )}
               </button>
             </Modal.Footer>
@@ -856,42 +947,50 @@ export default function BookYourStay({ onLoginClick }) {
           <>
             <Modal.Body>
               <div className="bm__ref-card">
-                <div>
-                  <span>Reference</span>
+                <div className="bm__ref-item">
+                  <span>Ref</span>
                   <strong>{pending.reference}</strong>
+                  <button
+                    type="button"
+                    className="bm__copy"
+                    onClick={handleCopyRef}
+                    aria-label="Copy booking reference"
+                  >
+                    {copied ? "Copied" : <CopyIcon />}
+                  </button>
                 </div>
-                <div>
+                <div className="bm__ref-item bm__ref-item--right">
                   <span>Check-in</span>
-                  <strong>{formatLong(pending.checkIn)}</strong>
-                  <small>{CHECK_IN_LABEL}</small>
+                  <strong>
+                    {fromKey(pending.checkIn).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                    , {CHECK_IN_LABEL}
+                  </strong>
                 </div>
               </div>
 
-              <p className="bm__timer" aria-live="polite">
-                <ClockIcon />
-                <span>Your date is held for</span>
-                <strong>{formatTimeLeft(secondsLeft)}</strong>
-              </p>
-
-              <div className="bm__due">
-                <span>Downpayment due now</span>
+              <div className="bm__due bm__due--soft">
+                <div>
+                  <span>Downpayment due now</span>
+                  <small>
+                    Total {peso(pending.total)}
+                    {pending.poolApplied
+                      ? ` (includes ${peso(pending.poolFee)} pool fee)`
+                      : ""}{" "}
+                    • {peso(pending.balance)} balance due before stay
+                  </small>
+                </div>
                 <strong>{peso(pending.downpayment)}</strong>
               </div>
-              <p className="bm__help">
-                Total {peso(pending.total)}
-                {pending.poolApplied
-                  ? ` (includes ${peso(pending.poolFee)} pool fee)`
-                  : ""}{" "}
-                · balance of {peso(pending.balance)} is paid before your stay.
-              </p>
 
-              {/* ADDED: door access reminder */}
-              <div className="bm__warn" role="note">
+              <div className="bm__note" role="note">
+                <LockIcon />
                 <p>
-                  Complete your <strong>full payment right away</strong>. You
-                  won’t receive your <strong>door access code</strong> until
-                  your booking is fully paid. You can also pay anytime from{" "}
-                  <strong>My bookings</strong> in the menu.
+                  <strong>Door access code</strong> unlocks upon full payment.
+                  You can settle the remaining balance anytime in{" "}
+                  <strong>My Bookings</strong>.
                 </p>
               </div>
 
@@ -922,7 +1021,7 @@ export default function BookYourStay({ onLoginClick }) {
                 </div>
               )}
 
-              <p className="bm__heading">Pay with</p>
+              <p className="bm__heading">Select payment method</p>
               <div
                 className="bm__methods"
                 role="radiogroup"
@@ -940,13 +1039,22 @@ export default function BookYourStay({ onLoginClick }) {
                       checked={method === name}
                       onChange={() => setMethod(name)}
                     />
-                    <span>{name}</span>
+                    <span
+                      className={`bm__method-icon bm__method-icon--${name.toLowerCase()}`}
+                      aria-hidden="true"
+                    >
+                      {METHOD_INFO[name].letter}
+                    </span>
+                    <span className="bm__method-text">
+                      <strong>{name}</strong>
+                      <small>{METHOD_INFO[name].sub}</small>
+                    </span>
                   </label>
                 ))}
               </div>
               <p className="bm__help">
-                You’ll be taken to {method} to finish paying. Your stay is
-                confirmed once the payment is received.
+                You’ll be redirected to <strong>{method}</strong> to authorize{" "}
+                {peso(pending.downpayment)}.
               </p>
 
               {error && (
@@ -963,11 +1071,12 @@ export default function BookYourStay({ onLoginClick }) {
                 onClick={closeModal}
                 disabled={submitting}
               >
+                <ChevronLeftIcon />
                 Pay later
               </button>
               <button
                 type="button"
-                className="bm__btn bm__btn--primary"
+                className="bm__btn bm__btn--primary bm__btn--wide"
                 onClick={handlePay}
                 disabled={submitting || poolUnresolved}
               >
