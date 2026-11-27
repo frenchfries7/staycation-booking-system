@@ -12,8 +12,15 @@ const getPayMongoHeaders = () => ({
 
 // Reusable PayMongo request
 const payMongoRequest = async (url, options = {}) => {
+  const timeoutMs = Number(process.env.PAYMONGO_REQUEST_TIMEOUT_MS);
+
+  if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0) {
+    throw new Error("Invalid PAYMONGO_REQUEST_TIMEOUT_MS configuration.");
+  }
+
   return fetch(url, {
     ...options,
+    signal: AbortSignal.timeout(timeoutMs),
     headers: {
       ...getPayMongoHeaders(),
       ...options.headers,
@@ -24,17 +31,27 @@ const payMongoRequest = async (url, options = {}) => {
 // Update local payment status only.
 // Booking confirmation will be handled by the verified webhook.
 const updatePaymentStatus = async (payment, status) => {
-  if (status === "succeeded") {
-    payment.paymentStatus = "completed";
-  } else if (status === "cancelled") {
-    payment.paymentStatus = "failed";
+  if (status !== "cancelled") {
+    return;
   }
 
-  await payment.save();
+  await Payment.updateOne(
+    {
+      _id: payment._id,
+      paymentStatus: "pending",
+    },
+    {
+      $set: {
+        paymentStatus: "failed",
+      },
+    },
+  );
 };
 
 // CREATE PAYMENT
 export const createPayment = async (req, res) => {
+  let paymentAttempt;
+  let paymentIntentId;
   try {
     const {
       bookingId,
@@ -144,11 +161,19 @@ export const createPayment = async (req, res) => {
     }
 
     // STEP 8: Check existing pending payment
+
     const existingPayment = await Payment.findOne({
       bookingId: booking._id,
       paymentPurpose,
       paymentStatus: "pending",
     });
+
+    if (existingPayment && !existingPayment.paymentIntentId) {
+      return res.status(409).json({
+        success: false,
+        message: "Payment initialization is still in progress.",
+      });
+    }
 
     if (existingPayment) {
       const statusResponse = await payMongoRequest(
@@ -156,9 +181,9 @@ export const createPayment = async (req, res) => {
         { method: "GET" },
       );
 
-      const statusResult = await statusResponse.json();
+      const statusResult = await statusResponse.json().catch(() => null);
 
-      if (!statusResponse.ok || !statusResult.data?.attributes?.status) {
+      if (!statusResponse.ok || !statusResult?.data?.attributes?.status) {
         return res.status(502).json({
           success: false,
           message: "Unable to verify existing payment.",
@@ -187,13 +212,49 @@ export const createPayment = async (req, res) => {
         });
       }
 
-      // Allow a new attempt if the previous intent is no longer usable.
-      if (
-        actualStatus === "cancelled" ||
-        actualStatus === "awaiting_payment_method"
-      ) {
-        existingPayment.paymentStatus = "failed";
-        await existingPayment.save();
+      if (actualStatus === "awaiting_payment_method") {
+        if (existingPayment.paymentMethod !== paymentMethod) {
+          return res.status(409).json({
+            success: false,
+            message:
+              "Please use the original payment method for this payment attempt.",
+          });
+        }
+
+        if (existingPayment.amount !== amount) {
+          return res.status(409).json({
+            success: false,
+            message: "Payment amount has changed. Please contact support.",
+          });
+        }
+        // Reuse the existing Payment Intent.
+        // A new Payment Method will be created and attached.
+
+        paymentAttempt = existingPayment;
+        paymentIntentId = existingPayment.paymentIntentId;
+
+        paymentAttempt.paymentMethod = paymentMethod;
+        await paymentAttempt.save();
+      } else if (actualStatus === "cancelled") {
+        // A cancelled Payment Intent can no longer be paid.
+
+        const updateResult = await Payment.updateOne(
+          {
+            _id: existingPayment._id,
+            paymentStatus: "pending",
+          },
+          {
+            $set: { paymentStatus: "failed" },
+          },
+        );
+
+        if (updateResult.modifiedCount !== 1) {
+          return res.status(409).json({
+            success: false,
+            message:
+              "Payment status changed. Please check your booking payment status.",
+          });
+        }
       } else {
         return res.status(409).json({
           success: false,
@@ -202,7 +263,6 @@ export const createPayment = async (req, res) => {
         });
       }
     }
-
     // STEP 9: Validate frontend return URL
     const frontendUrl = process.env.FRONTEND_URL?.trim().replace(/\/+$/, "");
 
@@ -230,37 +290,60 @@ export const createPayment = async (req, res) => {
       });
     }
 
-    // STEP 10: Create PayMongo Payment Intent
-    const intentResponse = await payMongoRequest(
-      "https://api.paymongo.com/v1/payment_intents",
-      {
-        method: "POST",
-        body: JSON.stringify({
-          data: {
-            attributes: {
-              amount: Math.round(amount * 100),
-              currency: "PHP",
-              payment_method_allowed: [provider],
-              description: `Villa Azora ${paymentPurpose} - ${booking.bookingReference}`,
+    // STEP 10: Create or reuse PayMongo Payment Intent
+
+    if (!paymentIntentId) {
+      const intentResponse = await payMongoRequest(
+        "https://api.paymongo.com/v1/payment_intents",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            data: {
+              attributes: {
+                amount: Math.round(amount * 100),
+                currency: "PHP",
+                payment_method_allowed: [provider],
+                description: `Staycation ${paymentPurpose} - ${booking.bookingReference}`,
+              },
             },
-          },
-        }),
-      },
-    );
+          }),
+        },
+      );
 
-    const intentResult = await intentResponse.json();
+      const intentResult = await intentResponse.json().catch(() => null);
 
-    if (!intentResponse.ok || !intentResult.data) {
-      console.error("PayMongo intent error:", intentResult);
+      if (!intentResponse.ok || !intentResult?.data?.id) {
+        console.error("PayMongo intent error:", intentResult);
 
-      return res.status(400).json({
-        success: false,
-        message: "Failed to create payment intent.",
-        error: intentResult.errors || intentResult,
-      });
+        return res.status(502).json({
+          success: false,
+          message: "Failed to create payment intent.",
+        });
+      }
+
+      paymentIntentId = intentResult.data.id;
+
+      try {
+        paymentAttempt = await Payment.create({
+          bookingId: booking._id,
+          paymentIntentId,
+          paymentMethod,
+          paymentPurpose,
+          amount,
+          currency: "PHP",
+          paymentStatus: "pending",
+        });
+      } catch (error) {
+        if (error.code === 11000) {
+          return res.status(409).json({
+            success: false,
+            message: "A payment attempt already exists for this booking.",
+          });
+        }
+
+        throw error;
+      }
     }
-
-    const paymentIntentId = intentResult.data.id;
 
     // STEP 11: Create GCash or Maya Payment Method
     const methodResponse = await payMongoRequest(
@@ -279,13 +362,12 @@ export const createPayment = async (req, res) => {
 
     const methodResult = await methodResponse.json();
 
-    if (!methodResponse.ok || !methodResult.data) {
+    if (!methodResponse.ok || !methodResult.data?.id) {
       console.error("PayMongo method error:", methodResult);
 
-      return res.status(400).json({
+      return res.status(502).json({
         success: false,
         message: "Failed to create payment method.",
-        error: methodResult.errors || methodResult,
       });
     }
 
@@ -312,31 +394,25 @@ export const createPayment = async (req, res) => {
     if (!attachResponse.ok || !attachResult.data) {
       console.error("PayMongo attach error:", attachResult);
 
-      return res.status(400).json({
+      return res.status(502).json({
         success: false,
         message: "Failed to attach payment method.",
-        error: attachResult.errors || attachResult,
       });
     }
 
-    const paymentStatus = attachResult.data.attributes.status;
     const nextAction = attachResult.data.attributes.next_action;
 
     // STEP 13: Save payment record in MongoDB
-    const payment = await Payment.create({
-      bookingId: booking._id,
-      paymentIntentId,
-      paymentMethod,
-      paymentPurpose,
-      amount,
-      currency: "PHP",
-      paymentStatus:
-        paymentStatus === "succeeded"
-          ? "completed"
-          : paymentStatus === "cancelled"
-            ? "failed"
-            : "pending",
-    });
+    const payment = await Payment.findById(paymentAttempt._id);
+
+    if (!payment) {
+      console.error("Local payment record disappeared:", paymentAttempt._id);
+
+      return res.status(500).json({
+        success: false,
+        message: "Unable to retrieve payment record.",
+      });
+    }
 
     // IMPORTANT:
     // Do not confirm the booking here.
@@ -357,6 +433,14 @@ export const createPayment = async (req, res) => {
     });
   } catch (error) {
     console.error("Create payment error:", error);
+
+    if (error.name === "TimeoutError" || error.name === "AbortError") {
+      return res.status(504).json({
+        success: false,
+        message:
+          "Payment service timed out. Please check your payment status before retrying.",
+      });
+    }
 
     return res.status(500).json({
       success: false,
@@ -426,6 +510,14 @@ export const getPaymentStatus = async (req, res) => {
     if (actualStatus === "cancelled") {
       await updatePaymentStatus(payment, "cancelled");
     }
+    const latestPayment = await Payment.findById(payment._id);
+
+    if (!latestPayment) {
+      return res.status(404).json({
+        success: false,
+        message: "Payment record not found.",
+      });
+    }
 
     // Booking confirmation and payment totals are updated
     // only by the verified webhook.
@@ -437,7 +529,7 @@ export const getPaymentStatus = async (req, res) => {
         paymentMethod: payment.paymentMethod,
         paymentPurpose: payment.paymentPurpose,
         amount: payment.amount,
-        paymentStatus: payment.paymentStatus,
+        paymentStatus: latestPayment.paymentStatus,
       },
       payMongoStatus: actualStatus,
       bookingStatus: booking.bookingStatus,
@@ -445,6 +537,13 @@ export const getPaymentStatus = async (req, res) => {
     });
   } catch (error) {
     console.error("Get payment status error:", error);
+
+    if (error.name === "TimeoutError" || error.name === "AbortError") {
+      return res.status(504).json({
+        success: false,
+        message: "Payment status request timed out. Please try again.",
+      });
+    }
 
     return res.status(500).json({
       success: false,
