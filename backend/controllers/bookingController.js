@@ -367,3 +367,86 @@ export const cancelBooking = async (req, res) => {
     });
   }
 };
+// Check availability for a date range (calendar batch request)
+export const checkAvailabilityRange = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+
+    const isValidDate = (value) => {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(value || "")) return false;
+      const date = new Date(`${value}T00:00:00.000Z`);
+      return (
+        !Number.isNaN(date.getTime()) &&
+        date.toISOString().slice(0, 10) === value
+      );
+    };
+
+    if (
+      !isValidDate(startDate) ||
+      !isValidDate(endDate) ||
+      startDate > endDate
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid start and end dates are required.",
+      });
+    }
+
+    const now = new Date();
+    const firstCheckIn = new Date(`${startDate}T14:00:00+08:00`);
+    const lastCheckIn = new Date(`${endDate}T14:00:00+08:00`);
+    const lastCheckOut = new Date(lastCheckIn.getTime() + 22 * 60 * 60 * 1000);
+
+    // Run both queries in parallel + .lean() for faster execution
+    const [bookings, blockedDates] = await Promise.all([
+      Booking.find({
+        checkInDateKey: { $gte: startDate, $lte: endDate },
+        isDateReserved: true,
+        $or: [
+          { bookingStatus: { $in: ["confirmed", "completed"] } },
+          { bookingStatus: "pending", expiresAt: { $gt: now } },
+        ],
+      })
+        .select("checkInDateKey -_id")
+        .lean(),
+      BlockedDate.find({
+        startDate: { $lt: lastCheckOut },
+        endDate: { $gte: firstCheckIn },
+      })
+        .select("startDate endDate -_id")
+        .lean(),
+    ]);
+
+    const unavailableDates = new Set(bookings.map((b) => b.checkInDateKey));
+
+    if (blockedDates.length > 0) {
+      const currentDate = new Date(`${startDate}T00:00:00.000Z`);
+      const finalDate = new Date(`${endDate}T00:00:00.000Z`);
+
+      while (currentDate <= finalDate) {
+        const dateKey = currentDate.toISOString().slice(0, 10);
+        const checkIn = new Date(`${dateKey}T14:00:00+08:00`);
+        const checkOut = new Date(checkIn.getTime() + 22 * 60 * 60 * 1000);
+
+        const isBlocked = blockedDates.some(
+          (blocked) =>
+            blocked.startDate < checkOut && blocked.endDate >= checkIn,
+        );
+
+        if (isBlocked) unavailableDates.add(dateKey);
+        currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      unavailableDates: [...unavailableDates],
+    });
+  } catch (error) {
+    console.error("Check availability range error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to check availability.",
+    });
+  }
+};

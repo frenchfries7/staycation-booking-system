@@ -1,4 +1,3 @@
-
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Get the JWT token saved after login.
@@ -23,11 +22,7 @@ let csrf = {
 async function getCsrfToken(forceRefresh = false) {
   const TOKEN_LIFETIME = 50 * 60 * 1000;
 
-  if (
-    !forceRefresh &&
-    csrf.token &&
-    Date.now() - csrf.at < TOKEN_LIFETIME
-  ) {
+  if (!forceRefresh && csrf.token && Date.now() - csrf.at < TOKEN_LIFETIME) {
     return csrf.token;
   }
 
@@ -40,9 +35,7 @@ async function getCsrfToken(forceRefresh = false) {
     const data = await response.json().catch(() => ({}));
 
     if (!response.ok || !data.csrfToken) {
-      throw new Error(
-        data.message || "Unable to obtain CSRF token."
-      );
+      throw new Error(data.message || "Unable to obtain CSRF token.");
     }
 
     csrf = {
@@ -57,28 +50,16 @@ async function getCsrfToken(forceRefresh = false) {
       at: 0,
     };
 
-    throw apiError(
-      error.message || "Unable to obtain CSRF token.",
-      "csrf"
-    );
+    throw apiError(error.message || "Unable to obtain CSRF token.", "csrf");
   }
 }
 
 // Reusable API request.
-async function request(
-  path,
-  {
-    method = "GET",
-    body,
-    retryCsrf = true,
-  } = {}
-) {
+async function request(path, { method = "GET", body, retryCsrf = true } = {}) {
   const authToken = getAuthToken();
   const upperMethod = method.toUpperCase();
 
-  const isSafeMethod = ["GET", "HEAD", "OPTIONS"].includes(
-    upperMethod
-  );
+  const isSafeMethod = ["GET", "HEAD", "OPTIONS"].includes(upperMethod);
 
   let csrfToken = "";
 
@@ -118,7 +99,7 @@ async function request(
   } catch {
     throw apiError(
       "We can't reach the server. Check your connection and try again.",
-      "network"
+      "network",
     );
   }
 
@@ -158,7 +139,7 @@ async function request(
 
   throw apiError(
     data.message || "Something went wrong. Please try again.",
-    code
+    code,
   );
 }
 
@@ -169,11 +150,22 @@ async function request(
 export async function checkDateAvailability(dateKey) {
   try {
     const data = await request(
-      `/bookings/availability?checkIn=${encodeURIComponent(dateKey)}`
+      `/bookings/availability?checkIn=${encodeURIComponent(dateKey)}`,
     );
 
-    return typeof data.available === "boolean"
-      ? data.available
+    return typeof data.available === "boolean" ? data.available : null;
+  } catch {
+    return null;
+  }
+}
+export async function checkDateAvailabilityRange(startDate, endDate) {
+  try {
+    const data = await request(
+      `/bookings/availability/range?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`,
+    );
+
+    return Array.isArray(data.unavailableDates)
+      ? new Set(data.unavailableDates)
       : null;
   } catch {
     return null;
@@ -188,9 +180,7 @@ export async function getAccommodation() {
     const item =
       data.accommodation ||
       data.data ||
-      (Array.isArray(data.accommodations)
-        ? data.accommodations[0]
-        : null) ||
+      (Array.isArray(data.accommodations) ? data.accommodations[0] : null) ||
       data;
 
     const price = Number(item?.price);
@@ -202,10 +192,7 @@ export async function getAccommodation() {
 
     return {
       price,
-      capacity:
-        Number.isFinite(capacity) && capacity > 0
-          ? capacity
-          : null,
+      capacity: Number.isFinite(capacity) && capacity > 0 ? capacity : null,
     };
   } catch {
     return null;
@@ -213,10 +200,7 @@ export async function getAccommodation() {
 }
 
 // Create a pending booking.
-export async function createBooking({
-  checkIn,
-  numberOfGuests,
-}) {
+export async function createBooking({ checkIn, numberOfGuests }) {
   const data = await request("/bookings", {
     method: "POST",
     body: {
@@ -230,12 +214,9 @@ export async function createBooking({
 
 // Add pool access to an existing booking.
 export async function addPoolAccess(bookingId) {
-  return request(
-    `/bookings/${encodeURIComponent(bookingId)}/pool-access`,
-    {
-      method: "POST",
-    }
-  );
+  return request(`/bookings/${encodeURIComponent(bookingId)}/pool-access`, {
+    method: "POST",
+  });
 }
 
 // Create GCash or Maya payment.
@@ -256,9 +237,7 @@ export async function createPayment({
 
 // Get payment status.
 export const getPaymentStatus = (paymentIntentId) =>
-  request(
-    `/payments/${encodeURIComponent(paymentIntentId)}`
-  );
+  request(`/payments/${encodeURIComponent(paymentIntentId)}`);
 
 // Get the logged-in customer's bookings.
 export async function getMyBookings() {
@@ -273,7 +252,7 @@ export async function cancelBooking(bookingId) {
     `/bookings/${encodeURIComponent(bookingId)}/cancel`,
     {
       method: "PATCH",
-    }
+    },
   );
 
   return data.booking;

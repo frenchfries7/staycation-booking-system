@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import {
   addPoolAccess,
   checkDateAvailability,
+  checkDateAvailabilityRange,
   createBooking,
   createPayment,
   getAccommodation,
@@ -171,30 +172,44 @@ export default function BookYourStay({ onLoginClick }) {
   const checkDates = useCallback(
     async (keys, { force = false } = {}) => {
       const nowKey = todayKey();
-      const stale = keys.filter((k) => {
-        if (k < nowKey) return false;
-        const known = availability.current.get(k);
+
+      const stale = keys.filter((key) => {
+        if (key < nowKey) return false;
+
+        const known = availability.current.get(key);
+
         return force || !known || Date.now() - known.at > CACHE_MS;
       });
+
       if (!stale.length) return;
 
       setChecking(true);
-      let next = 0;
-      const worker = async () => {
-        while (next < stale.length) {
-          const key = stale[next];
-          next += 1;
-          const isFree = await checkDateAvailability(key);
-          if (isFree !== null) {
-            availability.current.set(key, { booked: !isFree, at: Date.now() });
-          }
-        }
-      };
-      await Promise.all(
-        Array.from({ length: Math.min(MAX_PARALLEL, stale.length) }, worker),
-      );
-      syncBooked();
-      setChecking(false);
+
+      try {
+        const startDate = stale.reduce((a, b) => (a < b ? a : b));
+        const endDate = stale.reduce((a, b) => (a > b ? a : b));
+
+        const unavailableDates = await checkDateAvailabilityRange(
+          startDate,
+          endDate,
+        );
+
+        // Do not mark dates available if the request failed.
+        if (unavailableDates === null) return;
+
+        const checkedAt = Date.now();
+
+        stale.forEach((key) => {
+          availability.current.set(key, {
+            booked: unavailableDates.has(key),
+            at: checkedAt,
+          });
+        });
+
+        syncBooked();
+      } finally {
+        setChecking(false);
+      }
     },
     [syncBooked],
   );
@@ -302,10 +317,26 @@ export default function BookYourStay({ onLoginClick }) {
     year: "numeric",
   });
 
-  // Check the dates of the month being shown
+  // Check the visible month AND prefetch adjacent months in the background
   useEffect(() => {
-    checkDates(cells.filter(Boolean));
-  }, [cells, checkDates]);
+    const visibleKeys = cells.filter(Boolean);
+    const nextDate = new Date(view.y, view.m + 1, 1);
+    const nextKeys = buildMonth(
+      nextDate.getFullYear(),
+      nextDate.getMonth(),
+    ).filter(Boolean);
+
+    const prevDate = new Date(view.y, view.m - 1, 1);
+    const prevKeys =
+      monthIndex({ y: prevDate.getFullYear(), m: prevDate.getMonth() }) >=
+      currentIndex
+        ? buildMonth(prevDate.getFullYear(), prevDate.getMonth()).filter(
+            Boolean,
+          )
+        : [];
+
+    checkDates([...visibleKeys, ...nextKeys, ...prevKeys]);
+  }, [cells, view, currentIndex, checkDates]);
 
   // ---------- Price estimate ----------
   const quote = useMemo(
