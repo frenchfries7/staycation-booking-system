@@ -21,7 +21,11 @@ const csrfMiddleware = (req, res, next) => {
 
   // Bearer authentication is validated by authMiddleware
   // on the individual protected routes.
-  if (req.authMethod === "bearer") {
+  const authHeader = req.headers.authorization || "";
+  if (
+    req.authMethod === "bearer" ||
+    (authHeader.startsWith("Bearer ") && authHeader.slice(7).trim())
+  ) {
     return next();
   }
 
