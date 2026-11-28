@@ -31,7 +31,7 @@ import AdminLayout from "./admin/layout/AdminLayout";
 import Overview from "./admin/Overview";
 import Booking from "./admin/Booking";
 import Calendar from "./admin/Calendar";
-import ProtectedRoute from "./components/ProtectedRoute";
+import ProtectedRoute from "./admin/ProtectedRoute";
 
 function ClientLayout({ showLogin, openLogin, closeLogin }) {
   return (
@@ -106,9 +106,9 @@ function App() {
                 <Route path="settings" element={<div>Admin Settings</div>} />
               </Route>
             </Route>
+            <Route path="/my-bookings" element={<MyBookings />} />
 
             <Route path="*" element={<Navigate to="/" replace />} />
-            <Route path="/my-bookings" element={<MyBookings />} />
           </Routes>
         </StayProvider>
       </AuthProvider>
