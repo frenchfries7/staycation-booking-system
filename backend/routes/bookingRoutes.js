@@ -4,6 +4,7 @@ import {
   getMyBookings,
   getAllBookings,
   checkAvailability,
+  checkAvailabilityRange,
   cancelBooking,
 } from "../controllers/bookingController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
@@ -16,6 +17,8 @@ router.post("/", authMiddleware, csrfMiddleware, createBooking);
 router.get("/my-bookings", authMiddleware, getMyBookings);
 
 router.get("/all", authMiddleware, adminMiddleware, getAllBookings);
+
+router.get("/availability/range", checkAvailabilityRange);
 
 router.get("/availability", checkAvailability);
 
