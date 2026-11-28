@@ -19,7 +19,7 @@ router.post("/login", authLimiter, login);
 
 router.get("/me", authMiddleware, getMe);
 
-router.post("/logout", csrfMiddleware, logout);
+router.post("/logout", authMiddleware, csrfMiddleware, logout);
 
 router.put(
   "/:id",

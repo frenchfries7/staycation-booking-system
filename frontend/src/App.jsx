@@ -31,6 +31,7 @@ import AdminLayout from "./admin/layout/AdminLayout";
 import Overview from "./admin/Overview";
 import Booking from "./admin/Booking";
 import Calendar from "./admin/Calendar";
+import ProtectedRoute from "./admin/ProtectedRoute";
 
 function ClientLayout({ showLogin, openLogin, closeLogin }) {
   return (
@@ -85,29 +86,29 @@ function App() {
               />
             </Route>
 
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<Navigate to="dashboard" replace />} />
+            <Route element={<ProtectedRoute requiredRole="admin" />}>
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<Navigate to="dashboard" replace />} />
 
-              <Route path="dashboard" element={<Overview />} />
+                <Route path="dashboard" element={<Overview />} />
+                <Route path="booking" element={<Booking />} />
+                <Route path="calendar" element={<Calendar />} />
 
-              <Route path="booking" element={<Booking />} />
-
-              <Route path="calendar" element={<Calendar />} />
-
-              <Route
-                path="customers"
-                element={<div>Customer Management</div>}
-              />
-
-              <Route path="payments" element={<div>Payment Management</div>} />
-
-              <Route path="property" element={<div>Property Details</div>} />
-
-              <Route path="settings" element={<div>Admin Settings</div>} />
+                <Route
+                  path="customers"
+                  element={<div>Customer Management</div>}
+                />
+                <Route
+                  path="payments"
+                  element={<div>Payment Management</div>}
+                />
+                <Route path="property" element={<div>Property Details</div>} />
+                <Route path="settings" element={<div>Admin Settings</div>} />
+              </Route>
             </Route>
+            <Route path="/my-bookings" element={<MyBookings />} />
 
             <Route path="*" element={<Navigate to="/" replace />} />
-            <Route path="/my-bookings" element={<MyBookings />} />
           </Routes>
         </StayProvider>
       </AuthProvider>

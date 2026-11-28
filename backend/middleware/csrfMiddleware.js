@@ -1,4 +1,3 @@
-
 import crypto from "crypto";
 
 const csrfMiddleware = (req, res, next) => {
@@ -22,9 +21,7 @@ const csrfMiddleware = (req, res, next) => {
 
   // Bearer authentication is validated by authMiddleware
   // on the individual protected routes.
-  const authHeader = req.headers.authorization;
-
-  if (authHeader && authHeader.startsWith("Bearer ")) {
+  if (req.authMethod === "bearer") {
     return next();
   }
 

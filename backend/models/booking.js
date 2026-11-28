@@ -74,6 +74,7 @@ const bookingSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+
     doorAccessEmailSentAt: {
       type: Date,
       default: null,
@@ -84,7 +85,7 @@ const bookingSchema = new mongoose.Schema(
   },
 );
 
-// Only one active reservation per check-in date
+// Only one active reservation per check-in date (also speeds up checkAvailability)
 bookingSchema.index(
   { checkInDateKey: 1 },
   {
@@ -94,6 +95,15 @@ bookingSchema.index(
     },
   },
 );
+
+// Fast lookup and sorting for customer's "My Bookings"
+bookingSchema.index({ userId: 1, createdAt: -1 });
+
+// Fast cleanup for expirePendingBookings utility
+bookingSchema.index({ bookingStatus: 1, paymentStatus: 1, expiresAt: 1 });
+
+// Fast sorting for Admin dashboard bookings list
+bookingSchema.index({ createdAt: -1 });
 
 const Booking = mongoose.model("Booking", bookingSchema);
 
